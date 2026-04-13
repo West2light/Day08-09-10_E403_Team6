@@ -27,22 +27,22 @@
 ### Tài liệu được index
 | File | Nguồn | Department | Số chunk |
 |------|-------|-----------|---------|
-| `policy_refund_v4.txt` | policy/refund-v4.pdf | CS | TODO |
-| `sla_p1_2026.txt` | support/sla-p1-2026.pdf | IT | TODO |
-| `access_control_sop.txt` | it/access-control-sop.md | IT Security | TODO |
-| `it_helpdesk_faq.txt` | support/helpdesk-faq.md | IT | TODO |
-| `hr_leave_policy.txt` | hr/leave-policy-2026.pdf | HR | TODO |
+| `policy_refund_v4.txt` | policy/refund-v4.pdf | CS | 6 |
+| `sla_p1_2026.txt` | support/sla-p1-2026.pdf | IT | 5 |
+| `access_control_sop.txt` | it/access-control-sop.md | IT Security | 7 |
+| `it_helpdesk_faq.txt` | support/helpdesk-faq.md | IT | 6 |
+| `hr_leave_policy.txt` | hr/leave-policy-2026.pdf | HR | 5 |
 
 ### Quyết định chunking
 | Tham số | Giá trị | Lý do |
 |---------|---------|-------|
-| Chunk size | TODO tokens | TODO |
-| Overlap | TODO tokens | TODO |
-| Chunking strategy | Heading-based / paragraph-based | TODO |
+| Chunk size | 500 tokens | Được cấu hình trong code để tối ưu cho văn bản quy định, chính sách, SOP; khi split thực tế code quy đổi xấp xỉ 500 * 4 = 2000 ký tự. |
+| Overlap | 100 tokens | Giữ lại ngữ cảnh giữa các chunk liền kề, đủ để bao trọn điều kiện, ngoại lệ, hoặc câu nối tiếp nhau; code quy đổi xấp xỉ 100 * 4 = 400 ký tự. |
+| Chunking strategy | Heading-based + paragraph/natural-boundary fallback | Code ưu tiên split theo heading dạng === ... ===; nếu section quá dài thì split tiếp theo ranh giới tự nhiên như đoạn văn, dòng mới, dấu chấm, khoảng trắng. |
 | Metadata fields | source, section, effective_date, department, access | Phục vụ filter, freshness, citation |
 
 ### Embedding model
-- **Model**: TODO (OpenAI text-embedding-3-small / paraphrase-multilingual-MiniLM-L12-v2)
+- **Model**: paraphrase-multilingual-MiniLM-L12-v2
 - **Vector store**: ChromaDB (PersistentClient)
 - **Similarity metric**: Cosine
 
