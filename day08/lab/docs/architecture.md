@@ -61,15 +61,14 @@
 ### Variant (Sprint 3)
 | Tham số | Giá trị | Thay đổi so với baseline |
 |---------|---------|------------------------|
-| Strategy | TODO (hybrid / dense) | TODO |
-| Top-k search | TODO | TODO |
-| Top-k select | TODO | TODO |
-| Rerank | TODO (cross-encoder / MMR) | TODO |
-| Query transform | TODO (expansion / HyDE / decomposition) | TODO |
+| Strategy | hybrid | Baseline dùng dense; variant đổi sang hybrid, kết hợp dense retrieval và sparse/BM25 bằng Reciprocal Rank Fusion. |
+| Top-k search | 10 | Giữ nguyên |
+| Top-k select | 3 | Giữ nguyên |
+| Rerank | Không | Giữ nguyên |
+| Query transform | Không | Giữ nguyên |
 
 **Lý do chọn variant này:**
-> TODO: Giải thích tại sao chọn biến này để tune.
-> Ví dụ: "Chọn hybrid vì corpus có cả câu tự nhiên (policy) lẫn mã lỗi và tên chuyên ngành (SLA ticket P1, ERR-403)."
+> Chọn hybrid vì corpus có cả văn bản tự nhiên như policy, SOP, quy trình, FAQ và các keyword/tên chuyên ngành cần match chính xác như SLA, P1, Level 3, ERR-403, Approval Matrix, Access Control SOP. Dense retrieval giúp tìm theo nghĩa khi câu hỏi được diễn đạt khác tài liệu, còn sparse/BM25 giúp bắt đúng keyword, mã lỗi, cấp quyền, tên hệ thống hoặc thuật ngữ cụ thể. Hybrid RRF kết hợp hai loại tín hiệu này nên phù hợp để tune retrieval mà không cần thay đổi embedding model hay prompt."
 
 ---
 
