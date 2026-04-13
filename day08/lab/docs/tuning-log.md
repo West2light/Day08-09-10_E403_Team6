@@ -7,34 +7,35 @@
 
 ## Baseline (Sprint 2)
 
-**Ngày:** ___________  
+**Ngày:** 13/4/2026  
 **Config:**
 ```
 retrieval_mode = "dense"
-chunk_size = _____ tokens
-overlap = _____ tokens
+chunk_size = 500 tokens
+overlap = 100 tokens
 top_k_search = 10
 top_k_select = 3
 use_rerank = False
-llm_model = _____
+llm_model = gpt-4o-mini
 ```
 
 **Scorecard Baseline:**
 | Metric | Average Score |
 |--------|--------------|
-| Faithfulness | ? /5 |
-| Answer Relevance | ? /5 |
-| Context Recall | ? /5 |
-| Completeness | ? /5 |
+| Faithfulness | 4.5 /5 |
+| Answer Relevance | 4.2 /5 |
+| Context Recall | 5 /5 |
+| Completeness | 3.8 /5 |
 
 **Câu hỏi yếu nhất (điểm thấp):**
-> TODO: Liệt kê 2-3 câu hỏi có điểm thấp nhất và lý do tại sao.
-> Ví dụ: "q07 (Approval Matrix) - context recall = 1/5 vì dense bỏ lỡ alias."
+- q09 (ERR-403-AUTH là lỗi gì và cách xử lý?) - Faithfulness = 1, Relevance = 1, Completeness = 1. Baseline trả lời "Tôi không biết", cho thấy retrieved context không có đủ evidence hoặc dữ liệu không chứa thông tin này.
+- q10 (Nếu cần hoàn tiền khẩn cấp cho khách hàng VIP, quy trình có khác không?) - Relevance = 1, Completeness = 2. Model abstain đúng theo context, nhưng câu trả lời chưa giải quyết được nhu cầu người dùng vì tài liệu không có quy trình VIP/khẩn cấp.
+- q07 (Approval Matrix để cấp quyền hệ thống là tài liệu nào?) - Completeness = 2. Câu trả lời đúng nguồn nhưng còn thiếu thông tin rõ ràng rằng tài liệu hiện tại là Access Control SOP và có ghi chú từng được gọi là "Approval Matrix for System Access".
 
 **Giả thuyết nguyên nhân (Error Tree):**
 - [ ] Indexing: Chunking cắt giữa điều khoản
 - [ ] Indexing: Metadata thiếu effective_date
-- [ ] Retrieval: Dense bỏ lỡ exact keyword / alias
+- [x] Retrieval: Dense bỏ lỡ exact keyword / alias
 - [ ] Retrieval: Top-k quá ít → thiếu evidence
 - [ ] Generation: Prompt không đủ grounding
 - [ ] Generation: Context quá dài → lost in the middle
@@ -43,34 +44,41 @@ llm_model = _____
 
 ## Variant 1 (Sprint 3)
 
-**Ngày:** ___________  
-**Biến thay đổi:** ___________  
+**Ngày:** 13/4/2026  
+**Biến thay đổi:** Chuyển sang hybrid  
 **Lý do chọn biến này:**
-> TODO: Giải thích theo evidence từ baseline results.
-> Ví dụ: "Chọn hybrid vì q07 (alias query) và q09 (mã lỗi ERR-403) đều thất bại với dense.
-> Corpus có cả ngôn ngữ tự nhiên (policy) lẫn tên riêng/mã lỗi (ticket code, SLA label)."
+> Chọn hybrid vì corpus có cả ngôn ngữ tự nhiên (policy, SOP, FAQ) lẫn keyword/tên chuyên ngành cần match chính xác như SLA, P1, Level 3, ERR-403, Approval Matrix. Baseline dense đạt điểm trung bình tốt nhưng vẫn yếu ở các câu cần alias hoặc exact keyword như q07 và q09. Hybrid kết hợp dense retrieval với BM25/sparse retrieval bằng Reciprocal Rank Fusion, kỳ vọng tăng khả năng bắt đúng keyword mà vẫn giữ được tìm kiếm theo nghĩa.
 
 **Config thay đổi:**
 ```
-retrieval_mode = "hybrid"   # hoặc biến khác
+retrieval_mode = "hybrid"   
+top_k_search = 10
+top_k_select = 3
+use_rerank = False
 # Các tham số còn lại giữ nguyên như baseline
 ```
 
 **Scorecard Variant 1:**
 | Metric | Baseline | Variant 1 | Delta |
 |--------|----------|-----------|-------|
-| Faithfulness | ?/5 | ?/5 | +/- |
-| Answer Relevance | ?/5 | ?/5 | +/- |
-| Context Recall | ?/5 | ?/5 | +/- |
-| Completeness | ?/5 | ?/5 | +/- |
+| Faithfulness | 4.50/5 | 4.50/5 | 0.00 |
+| Answer Relevance | 4.20/5 | 4.20/5 | 0.00 |
+| Context Recall | 5.00/5 | 5.00/5 | 0.00 |
+| Completeness | 3.80/5 | 3.80/5 | 0.00 |
 
 **Nhận xét:**
-> TODO: Variant 1 cải thiện ở câu nào? Tại sao?
-> Có câu nào kém hơn không? Tại sao?
+Variant hybrid không làm thay đổi điểm trung bình so với baseline. Các câu q01, q02, q03, q05, q06, q08 vẫn đạt điểm tối đa. q03 có citation đổi từ [2] ở baseline sang [1] ở hybrid, cho thấy thứ tự chunk liên quan tốt hơn, nhưng điểm đánh giá vẫn giữ nguyên.
+
+Các câu yếu vẫn chưa cải thiện:
+- q04 giữ Faithfulness = 4 và Completeness = 3 vì câu trả lời còn thiếu/không đầy đủ chi tiết ngoại lệ hoàn tiền cho sản phẩm kỹ thuật số.
+- q07 giữ Completeness = 2 vì câu trả lời còn thiếu chi tiết alias "Approval Matrix for System Access".
+- q09 vẫn thất bại với "Tôi không biết" vì context không có đủ thông tin về ERR-403-AUTH hoặc retrieval chưa tìm được evidence liên quan.
+- q10 vẫn Relevance = 1 và Completeness = 2 vì tài liệu không có thông tin về quy trình hoàn tiền khẩn cấp cho khách hàng VIP.
 
 **Kết luận:**
-> TODO: Variant 1 có tốt hơn baseline không?
-> Bằng chứng là gì? (điểm số, câu hỏi cụ thể)
+Variant 1 chưa tốt hơn baseline theo scorecard tổng thể. Tất cả metric trung bình đều bằng nhau: Faithfulness 4.50, Relevance 4.20, Context Recall 5.00, Completeness 3.80.
+
+Tuy vậy, hybrid vẫn là hướng hợp lý để giữ làm variant vì nó thay đổi retrieval theo đúng đặc điểm corpus: văn bản chính sách cần semantic search, còn mã lỗi/tên chuyên ngành cần keyword search. Kết quả hiện tại cho thấy vấn đề còn lại có thể nằm ở dữ liệu thiếu evidence, câu trả lời chưa đủ chi tiết, hoặc cần query transform/rerank thay vì chỉ đổi retrieval sang hybrid.
 
 ---
 
