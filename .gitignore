@@ -18,3 +18,7 @@ env/
 __pycache__/
 *.py[cod]
 #tests
+
+#ignore adds
+
+day08/adds/
