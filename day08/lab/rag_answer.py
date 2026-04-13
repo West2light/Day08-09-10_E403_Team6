@@ -520,7 +520,7 @@ def rag_answer(
     prompt = build_grounded_prompt(query, context_block)
 
     if verbose:
-        print(f"\n[RAG] Prompt:\n{prompt[:500]}...\n")
+        print(f"\n[RAG] Prompt:\n{prompt}...\n")
 
     # --- Bước 4: Generate ---
     answer = call_llm(prompt)
