@@ -334,7 +334,7 @@ def list_chunks(db_dir: Path = CHROMA_DB_DIR, n: int = 5) -> None:
             print(f"  Source: {meta.get('source', 'N/A')}")
             print(f"  Section: {meta.get('section', 'N/A')}")
             print(f"  Effective Date: {meta.get('effective_date', 'N/A')}")
-            print(f"  Text preview: {doc[:120]}...")
+            print(f"  Text preview: {doc[:150]}...")
             print()
     except Exception as e:
         print(f"Lỗi khi đọc index: {e}")
