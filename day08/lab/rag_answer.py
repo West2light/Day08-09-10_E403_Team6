@@ -91,26 +91,36 @@ def retrieve_sparse(query: str, top_k: int = TOP_K_SEARCH) -> List[Dict[str, Any
 
     Mạnh ở: exact term, mã lỗi, tên riêng (ví dụ: "ERR-403", "P1", "refund")
     Hay hụt: câu hỏi paraphrase, đồng nghĩa
-
-    TODO Sprint 3 (nếu chọn hybrid):
-    1. Cài rank_bm25: pip install rank-bm25
-    2. Load tất cả chunks từ ChromaDB (hoặc rebuild từ docs)
-    3. Tokenize và tạo BM25Index
-    4. Query và trả về top_k kết quả
-
-    Gợi ý:
-        from rank_bm25 import BM25Okapi
-        corpus = [chunk["text"] for chunk in all_chunks]
-        tokenized_corpus = [doc.lower().split() for doc in corpus]
-        bm25 = BM25Okapi(tokenized_corpus)
-        tokenized_query = query.lower().split()
-        scores = bm25.get_scores(tokenized_query)
-        top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_k]
     """
-    # TODO Sprint 3: Implement BM25 search
-    # Tạm thời return empty list
-    print("[retrieve_sparse] Chưa implement — Sprint 3")
-    return []
+    try:
+        from rank_bm25 import BM25Okapi
+    except ImportError:
+        print("[Lỗi] Vui lòng cài đặt thư viện: pip install rank-bm25")
+        return []
+        
+    import chromadb
+    from index import CHROMA_DB_DIR
+    client = chromadb.PersistentClient(path=str(CHROMA_DB_DIR))
+    collection = client.get_collection("rag_lab")
+    
+    all_data = collection.get(include=["documents", "metadatas"])
+    documents = all_data.get("documents", [])
+    metadatas = all_data.get("metadatas", [])
+    
+    if not documents: return []
+    
+    tokenized_corpus = [doc.lower().split() for doc in documents]
+    bm25 = BM25Okapi(tokenized_corpus)
+    tokenized_query = query.lower().split()
+    
+    scores = bm25.get_scores(tokenized_query)
+    top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_k]
+    
+    return [{
+        "text": documents[i],
+        "metadata": metadatas[i],
+        "score": float(scores[i])
+    } for i in top_indices if scores[i] > 0]
 
 
 # =============================================================================
@@ -132,24 +142,34 @@ def retrieve_hybrid(
     Args:
         dense_weight: Trọng số cho dense score (0-1)
         sparse_weight: Trọng số cho sparse score (0-1)
-
-    TODO Sprint 3 (nếu chọn hybrid):
-    1. Chạy retrieve_dense() → dense_results
-    2. Chạy retrieve_sparse() → sparse_results
-    3. Merge bằng RRF:
-       RRF_score(doc) = dense_weight * (1 / (60 + dense_rank)) +
-                        sparse_weight * (1 / (60 + sparse_rank))
-       60 là hằng số RRF tiêu chuẩn
-    4. Sort theo RRF score giảm dần, trả về top_k
-
-    Khi nào dùng hybrid (từ slide):
-    - Corpus có cả câu tự nhiên VÀ tên riêng, mã lỗi, điều khoản
-    - Query như "Approval Matrix" khi doc đổi tên thành "Access Control SOP"
     """
-    # TODO Sprint 3: Implement hybrid RRF
-    # Tạm thời fallback về dense
-    print("[retrieve_hybrid] Chưa implement RRF — fallback về dense")
-    return retrieve_dense(query, top_k)
+    dense_results = retrieve_dense(query, top_k=60) # Lấy sâu để fusion tốt hơn
+    sparse_results = retrieve_sparse(query, top_k=60)
+    
+    rrf_scores = {}
+    chunk_map = {}
+    
+    # Xếp hạng Dense
+    for rank, chunk in enumerate(dense_results):
+        text = chunk["text"]
+        chunk_map[text] = chunk
+        rrf_scores[text] = rrf_scores.get(text, 0) + dense_weight * (1.0 / (60 + rank + 1))
+        
+    # Xếp hạng Sparse
+    for rank, chunk in enumerate(sparse_results):
+        text = chunk["text"]
+        if text not in chunk_map: chunk_map[text] = chunk
+        rrf_scores[text] = rrf_scores.get(text, 0) + sparse_weight * (1.0 / (60 + rank + 1))
+        
+    sorted_chunks = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
+    
+    hybrid_chunks = []
+    for text, score in sorted_chunks[:top_k]:
+        chunk = chunk_map[text].copy()
+        chunk["score"] = score
+        hybrid_chunks.append(chunk)
+        
+    return hybrid_chunks
 
 
 # =============================================================================
@@ -394,7 +414,7 @@ def rag_answer(
     prompt = build_grounded_prompt(query, context_block)
 
     if verbose:
-        print(f"\n[RAG] Prompt:\n{prompt[:500]}...\n")
+        print(f"\n[RAG] Prompt:\n{prompt}\n")
 
     # --- Bước 4: Generate ---
     answer = call_llm(prompt)
@@ -432,12 +452,12 @@ def compare_retrieval_strategies(query: str) -> None:
     print(f"Query: {query}")
     print('='*60)
 
-    strategies = ["dense", "transform"]
+    strategies = ["dense", "hybrid"]
 
     for strategy in strategies:
         print(f"\n--- Strategy: {strategy} ---")
         try:
-            result = rag_answer(query, retrieval_mode=strategy, verbose=False)
+            result = rag_answer(query, retrieval_mode=strategy, verbose=True)
             print(f"Answer: {result['answer']}")
             print(f"Sources: {result['sources']}")
         except NotImplementedError as e:
