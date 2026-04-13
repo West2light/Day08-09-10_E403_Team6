@@ -117,19 +117,28 @@ Answer:
 
 ## 6. Diagram (tùy chọn)
 
-> TODO: Vẽ sơ đồ pipeline nếu có thời gian. Có thể dùng Mermaid hoặc drawio.
+Sơ đồ dưới đây mô tả hai luồng retrieval đã dùng trong evaluation: baseline dense và variant hybrid.
 
 ```mermaid
-graph LR
-    A[User Query] --> B[Query Embedding]
-    B --> C[ChromaDB Vector Search]
-    C --> D[Top-10 Candidates]
-    D --> E{Rerank?}
-    E -->|Yes| F[Cross-Encoder]
-    E -->|No| G[Top-3 Select]
-    F --> G
-    G --> H[Build Context Block]
-    H --> I[Grounded Prompt]
-    I --> J[LLM]
-    J --> K[Answer + Citation]
+flowchart LR
+    A[User Query] --> B{Retrieval mode}
+
+    B -->|Baseline: dense| C[Query embedding]
+    C --> D[ChromaDB vector search<br/>cosine similarity]
+    D --> E[Top-k search = 10]
+
+    B -->|Variant: hybrid| F[Query embedding]
+    B -->|Variant: hybrid| G[BM25 keyword search]
+    F --> H[Dense results]
+    G --> I[Sparse results]
+    H --> J[Reciprocal Rank Fusion<br/>dense weight 0.6<br/>sparse weight 0.4]
+    I --> J
+    J --> K[Top-k search = 10]
+
+    E --> L[Top-k select = 3<br/>no rerank]
+    K --> L
+    L --> M[Build context block<br/>numbered citations]
+    M --> N[Grounded prompt]
+    N --> O[LLM: gpt-4o-mini<br/>temperature 0]
+    O --> P[Answer + citations + sources]
 ```

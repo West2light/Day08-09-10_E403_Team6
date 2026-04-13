@@ -105,10 +105,10 @@ Tuy vậy, hybrid vẫn là hướng hợp lý để giữ làm variant vì nó 
 > TODO (Sprint 4): Điền sau khi hoàn thành evaluation.
 
 1. **Lỗi phổ biến nhất trong pipeline này là gì?**
-   > _____________
+   > Lỗi phổ biến nhất không phải là không retrieve được tài liệu đúng, mà là retrieve đúng source nhưng câu trả lời chưa đầy đủ hoặc chưa abstain tốt khi context thiếu. Nói cách khác, nút thắt nằm ở evidence selection và generation grounding hơn là ở indexing cơ bản.
 
 2. **Biến nào có tác động lớn nhất tới chất lượng?**
-   > _____________
+   > Việc đổi từ dense sang hybrid không tạo cải thiện tích cực. Biến có khả năng tác động lớn hơn ở vòng sau nhiều khả năng là rerank hoặc prompt grounding/abstain, vì đây mới là nơi ảnh hưởng trực tiếp đến completeness và faithfulness ở các câu khó.
 
 3. **Nếu có thêm 1 giờ, nhóm sẽ thử gì tiếp theo?**
-   > _____________
+   > Nhóm sẽ thử một pipeline dạng dense retrieve → rerank → top-3 select → grounded answer. Đồng thời cần siết prompt theo hướng: chỉ trả lời khi ít nhất một chunk chứa evidence trực tiếp; nếu không đủ evidence thì phải trả lời “Không đủ dữ liệu”.
