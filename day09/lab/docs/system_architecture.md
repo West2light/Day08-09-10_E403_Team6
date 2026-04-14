@@ -1,7 +1,7 @@
 # System Architecture — Lab Day 09
 
-**Nhóm:** ___________  
-**Ngày:** ___________  
+**Nhóm:** Nhóm 6  
+**Ngày:** 14/4/2026  
 **Version:** 1.0
 
 ---

@@ -15,6 +15,9 @@ from datetime import datetime
 import re
 from typing import TypedDict, Literal, Optional
 
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+
 # Uncomment nếu dùng LangGraph:
 from langgraph.graph import StateGraph, START, END
 
@@ -106,9 +109,12 @@ def supervisor_node(state: AgentState) -> AgentState:
     # Ví dụ routing cơ bản — nhóm phát triển thêm:
     policy_keywords = [
         "hoàn tiền", "refund", "flash sale", "license", "subscription",
-        "cấp quyền", "access", "level 2", "level 3", "approval", "phê duyệt",
+        "cấp quyền", "access", "level 2", "level 3", "level 4", "approval", "phê duyệt",
+        "probation", "thử việc", "remote", "điều kiện", "được phép", "không được",
+        "store credit", "ngoại lệ", "exception",
     ]
-    retrieval_keywords = ["p1", "escalation", "sla", "ticket", "incident", "helpdesk"]
+    retrieval_keywords = ["p1", "escalation", "sla", "ticket", "incident", "helpdesk",
+                          "mật khẩu", "password", "vpn", "thông báo", "kênh", "notification"]
     risk_keywords = ["emergency", "khẩn cấp", "2am", "không rõ", "urgent", "critical", "err-"]
 
     matched_policy = [kw for kw in policy_keywords if kw in task]

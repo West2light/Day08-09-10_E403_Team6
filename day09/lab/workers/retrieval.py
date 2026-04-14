@@ -25,7 +25,7 @@ import sys
 # ─────────────────────────────────────────────
 
 WORKER_NAME = "retrieval_worker"
-DEFAULT_TOP_K = 3
+DEFAULT_TOP_K = 5
 
 
 def _get_embedding_fn():
@@ -36,7 +36,7 @@ def _get_embedding_fn():
     # Option A: Sentence Transformers (offline, không cần API key)
     try:
         from sentence_transformers import SentenceTransformer
-        model = SentenceTransformer("all-MiniLM-L6-v2")
+        model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
         def embed(text: str) -> list:
             return model.encode([text])[0].tolist()
         return embed
@@ -68,7 +68,8 @@ def _get_collection():
     TODO Sprint 2: Đảm bảo collection đã được build từ Step 3 trong README.
     """
     import chromadb
-    client = chromadb.PersistentClient(path="./chroma_db")
+    _here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    client = chromadb.PersistentClient(path=os.path.join(_here, "chroma_db"))
     try:
         collection = client.get_collection("rag_lab")
     except Exception:

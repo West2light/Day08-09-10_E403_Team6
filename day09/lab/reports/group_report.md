@@ -1,16 +1,16 @@
 # Báo Cáo Nhóm — Lab Day 09: Multi-Agent Orchestration
 
-**Tên nhóm:** ___________  
+**Tên nhóm:** Nhóm 6  
 **Thành viên:**
 | Tên | Vai trò | Email |
 |-----|---------|-------|
-| ___ | Supervisor Owner | ___ |
-| ___ | Worker Owner | ___ |
-| ___ | MCP Owner | ___ |
-| ___ | Trace & Docs Owner | ___ |
+| Vương Hoàng Giang | Supervisor Owner | gvuonghoang123@gmail.com |
+| Phạm Anh Dũng | Worker Owner | panhdung2511@gmail.com |
+| Dương Quang Đông | MCP Owner | quangdong010203@gmail.com |
+| Nguyễn Lê Trung | Trace & Docs Owner | nguyenletrung2002@gmail.com |
 
-**Ngày nộp:** ___________  
-**Repo:** ___________  
+**Ngày nộp:** 14/4/2026  
+**Repo:** [Day08-09-10_E403_Team6](https://github.com/West2light/Day08-09-10_E403_Team6/tree/main/day09)    
 **Độ dài khuyến nghị:** 600–1000 từ
 
 ---

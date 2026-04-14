@@ -25,10 +25,12 @@ SYSTEM_PROMPT = """Bạn là trợ lý IT Helpdesk nội bộ.
 
 Quy tắc nghiêm ngặt:
 1. CHỈ trả lời dựa vào context được cung cấp. KHÔNG dùng kiến thức ngoài.
-2. Nếu context không đủ để trả lời → nói rõ "Không đủ thông tin trong tài liệu nội bộ".
+2. Nếu context không đủ hoặc KHÔNG có thông tin cụ thể được hỏi → nói rõ "Thông tin này không có trong tài liệu nội bộ hiện có." Đặc biệt: nếu hỏi về con số, mức phạt, thời hạn cụ thể mà context không nêu → PHẢI abstain, không được bịa.
 3. Dùng citation dạng [1], [2] theo danh sách evidence được đánh số trong context.
-4. Trả lời súc tích, có cấu trúc. Không dài dòng.
-5. Nếu có exceptions/ngoại lệ hoặc policy note quan trọng → nêu trước khi kết luận.
+4. Nếu câu hỏi yêu cầu liệt kê nhiều chi tiết (ai, kênh nào, thời gian, điều kiện) → liệt kê ĐẦY ĐỦ tất cả chi tiết có trong context, không bỏ sót.
+5. Nếu có exceptions/ngoại lệ hoặc policy note quan trọng → nêu TRƯỚC khi kết luận.
+6. Kết luận phải RÕ RÀNG: "Được" / "Không được" / "Không có thông tin" — không mơ hồ.
+7. Với câu hỏi về điều kiện eligibility (ai được/không được): nêu kết luận trước, lý do sau.
 """
 
 
@@ -127,6 +129,30 @@ def _build_context(chunks: list, policy_result: dict) -> str:
     return "\n\n".join(parts)
 
 
+_ABSTAIN_SIGNALS = [
+    ("phạt", "tài chính"),
+    ("penalty", "financial"),
+    ("mức phạt",),
+    ("fine",),
+    ("compensation",),
+    ("bồi thường",),
+]
+
+def _should_abstain(task: str, chunks: list) -> bool:
+    """
+    Phát hiện câu hỏi yêu cầu thông tin không có trong tài liệu.
+    Trả về True nếu nên abstain.
+    """
+    task_lower = task.lower()
+    for signals in _ABSTAIN_SIGNALS:
+        if all(s in task_lower for s in signals):
+            # Kiểm tra chunks có chứa thông tin trả lời không
+            combined = " ".join(c.get("text", "").lower() for c in chunks)
+            if not any(s in combined for s in signals):
+                return True
+    return False
+
+
 def _fallback_answer(task: str, chunks: list, policy_result: dict) -> str:
     """
     Fallback không cần LLM:
@@ -136,6 +162,10 @@ def _fallback_answer(task: str, chunks: list, policy_result: dict) -> str:
     """
     if not chunks and not policy_result:
         return "Không đủ thông tin trong tài liệu nội bộ để trả lời câu hỏi này."
+
+    # Abstain nếu câu hỏi hỏi về thông tin không có trong tài liệu
+    if _should_abstain(task, chunks):
+        return "Thông tin này không có trong tài liệu nội bộ hiện có. Vui lòng liên hệ bộ phận liên quan để tra cứu."
 
     notes = []
 
@@ -174,28 +204,27 @@ def _fallback_answer(task: str, chunks: list, policy_result: dict) -> str:
 
             return "\n".join(notes)
 
-    # Case 3: có evidence bình thường → trả lời ngắn gọn từ top chunks
+    # Case 3: có evidence bình thường → trả lời từ chunks, giữ đủ thông tin
     if chunks:
-        top_chunk = chunks[0]
-        top_text = top_chunk.get("text", "").strip()
+        answer_lines = []
 
-        if not top_text:
+        for i, chunk in enumerate(chunks, 1):
+            text = chunk.get("text", "").strip()
+            source = chunk.get("source", "unknown")
+            if not text:
+                continue
+            # Giữ tối đa 600 ký tự mỗi chunk để không mất chi tiết quan trọng
+            display_text = text.replace("\n", " ").strip()
+            if len(display_text) > 600:
+                display_text = display_text[:597].rstrip() + "..."
+
+            if i == 1:
+                answer_lines.append(f"Theo tài liệu nội bộ [{i}] ({source}): {display_text}")
+            else:
+                answer_lines.append(f"Bổ sung [{i}] ({source}): {display_text}")
+
+        if not answer_lines:
             return "Không đủ thông tin trong tài liệu nội bộ để trả lời câu hỏi này."
-
-        # Cắt gọn vừa phải để tránh quá dài
-        short_text = top_text.replace("\n", " ").strip()
-        if len(short_text) > 260:
-            short_text = short_text[:257].rstrip() + "..."
-
-        answer_lines = [f"Theo tài liệu nội bộ, thông tin phù hợp nhất là: {short_text} [1]"]
-
-        # Nếu có thêm chunk thứ 2 từ nguồn khác, thêm bổ sung ngắn
-        if len(chunks) > 1:
-            second_text = chunks[1].get("text", "").replace("\n", " ").strip()
-            if second_text:
-                if len(second_text) > 180:
-                    second_text = second_text[:177].rstrip() + "..."
-                answer_lines.append(f"Thông tin bổ sung: {second_text} [2]")
 
         return "\n".join(answer_lines)
 
@@ -216,7 +245,7 @@ def _estimate_confidence(chunks: list, answer: str, policy_result: dict, used_ll
 
     answer_lower = answer.lower()
 
-    if "không đủ thông tin" in answer_lower:
+    if "không đủ thông tin" in answer_lower or "không có trong tài liệu" in answer_lower:
         return 0.3
 
     if policy_result.get("needs_human_review") or policy_result.get("policy_applies") is None:
@@ -249,9 +278,12 @@ def synthesize(task: str, chunks: list, policy_result: dict) -> dict:
 
 {context}
 
-Hãy trả lời câu hỏi dựa vào tài liệu trên.
-Ưu tiên nêu ngoại lệ/policy note trước nếu có.
-Bắt buộc dùng citation dạng [1], [2] theo thứ tự evidence.""",
+Yêu cầu trả lời:
+- Nếu câu hỏi hỏi về nhiều chi tiết (ai nhận thông báo, kênh nào, thời gian, điều kiện) → liệt kê ĐẦY ĐỦ tất cả chi tiết có trong context (ví dụ: Slack #incident-p1, email incident@company.internal, PagerDuty đều phải nêu nếu context có).
+- Nếu thông tin được hỏi KHÔNG có trong context → nói rõ "Thông tin này không có trong tài liệu nội bộ hiện có." KHÔNG bịa số liệu.
+- Kết luận phải rõ ràng (Được / Không được / Không có thông tin).
+- Ưu tiên nêu ngoại lệ/policy note trước nếu có.
+- Bắt buộc dùng citation dạng [1], [2] theo thứ tự evidence.""",
         },
     ]
 
