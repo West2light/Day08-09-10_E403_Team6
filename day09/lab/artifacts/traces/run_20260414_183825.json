@@ -1,0 +1,75 @@
+{
+  "task": "Nhân viên được làm remote tối đa mấy ngày mỗi tuần?",
+  "route_reason": "policy/access signal detected: remote → route policy_tool_worker (prefer MCP) | choose MCP=yes",
+  "risk_high": false,
+  "needs_tool": true,
+  "hitl_triggered": false,
+  "retrieved_chunks": [
+    {
+      "text": "[MOCK] Không thể query ChromaDB: [WinError 1] Incorrect function. Kết quả giả lập.",
+      "source": "mock_data",
+      "score": 0.5
+    }
+  ],
+  "retrieved_sources": [
+    "mock_data"
+  ],
+  "policy_result": {
+    "policy_applies": true,
+    "policy_name": "refund_policy_v4",
+    "exceptions_found": [],
+    "source": [
+      "mock_data"
+    ],
+    "policy_version_note": "",
+    "needs_human_review": false,
+    "explanation": "Analyzed via rule-based policy check. Không phát hiện exception rõ ràng trong task/context hiện tại."
+  },
+  "mcp_tools_used": [
+    {
+      "tool": "search_kb",
+      "input": {
+        "query": "Nhân viên được làm remote tối đa mấy ngày mỗi tuần?",
+        "top_k": 3
+      },
+      "output": {
+        "chunks": [
+          {
+            "text": "[MOCK] Không thể query ChromaDB: [WinError 1] Incorrect function. Kết quả giả lập.",
+            "source": "mock_data",
+            "score": 0.5
+          }
+        ],
+        "sources": [
+          "mock_data"
+        ],
+        "total_found": 1
+      },
+      "error": null,
+      "timestamp": "2026-04-14T18:38:29.696657"
+    }
+  ],
+  "final_answer": "Thông tin này không có trong tài liệu nội bộ hiện có.",
+  "sources": [
+    "mock_data"
+  ],
+  "confidence": 0.3,
+  "history": [
+    "[supervisor] received task: Nhân viên được làm remote tối đa mấy ngày mỗi tuần?",
+    "[supervisor] route=policy_tool_worker reason=policy/access signal detected: remote → route policy_tool_worker (prefer MCP) | choose MCP=yes",
+    "[retrieval_worker] ERROR: [WinError 1] Incorrect function",
+    "[policy_tool_worker] called MCP search_kb",
+    "[policy_tool_worker] policy_applies=True, exceptions=0, policy=refund_policy_v4",
+    "[synthesis_worker] answer generated, confidence=0.3, sources=['mock_data']",
+    "[graph] completed in 5214ms via langgraph"
+  ],
+  "workers_called": [
+    "retrieval_worker",
+    "policy_tool_worker",
+    "synthesis_worker"
+  ],
+  "supervisor_route": "policy_tool_worker",
+  "latency_ms": 5214,
+  "run_id": "run_20260414_183825",
+  "question_id": "q05"
+}

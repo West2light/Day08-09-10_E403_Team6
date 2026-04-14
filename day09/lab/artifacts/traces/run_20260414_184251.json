@@ -1,0 +1,109 @@
+{
+  "task": "Khách hàng đặt đơn ngày 31/01/2026 và yêu cầu hoàn tiền ngày 07/02/2026. Sản phẩm lỗi nhà sản xuất, chưa kích hoạt, không phải Flash Sale. Được hoàn tiền không?",
+  "route_reason": "policy/access signal detected: hoàn tiền, flash sale → route policy_tool_worker (prefer MCP) | choose MCP=yes",
+  "risk_high": false,
+  "needs_tool": true,
+  "hitl_triggered": false,
+  "retrieved_chunks": [
+    {
+      "text": "Hoàn tiền — Điều kiện áp dụng:\nYêu cầu được gửi trong vòng 7 ngày kể từ thời điểm xác nhận đơn hàng.\n\nNgoại lệ không được hoàn tiền:\n- Sản phẩm thuộc danh mục hàng kỹ thuật số (license key, subscription).\n- Đơn hàng đã áp dụng mã giảm giá đặc biệt theo chương trình khuyến mãi Flash Sale.\n- Sản phẩm đã được kích hoạt hoặc đăng ký tài khoản.",
+      "source": "policy/refund-v4.pdf",
+      "score": 0.7726,
+      "metadata": {
+        "access": "internal",
+        "section": "Điều 3: Điều kiện áp dụng và ngoại lệ",
+        "department": "CS",
+        "source": "policy/refund-v4.pdf",
+        "effective_date": "2026-02-01"
+      }
+    },
+    {
+      "text": "Khách hàng được quyền yêu cầu hoàn tiền khi đáp ứng đủ các điều kiện sau:\n- Sản phẩm bị lỗi do nhà sản xuất, không phải do người dùng.\n- Yêu cầu được gửi trong vòng 7 ngày làm việc kể từ thời điểm xác nhận đơn hàng.\n- Đơn hàng chưa được sử dụng hoặc chưa bị mở seal.",
+      "source": "policy/refund-v4.pdf",
+      "score": 0.6538,
+      "metadata": {
+        "department": "CS",
+        "access": "internal",
+        "section": "Điều 2: Điều kiện được hoàn tiền",
+        "effective_date": "2026-02-01",
+        "source": "policy/refund-v4.pdf"
+      }
+    },
+    {
+      "text": "Q: Tôi cần cài phần mềm mới, phải làm gì?\nA: Gửi yêu cầu qua Jira project IT-SOFTWARE. Line Manager phải phê duyệt trước khi IT cài đặt.\n\nQ: Ai chịu trách nhiệm gia hạn license phần mềm?\nA: IT Procurement team quản lý tất cả license. Nhắc nhở sẽ được gửi 30 ngày trước khi hết hạn.",
+      "source": "support/helpdesk-faq.md",
+      "score": 0.4461,
+      "metadata": {
+        "source": "support/helpdesk-faq.md",
+        "effective_date": "2026-01-20",
+        "access": "internal",
+        "department": "IT",
+        "section": "Section 3: Phần mềm và license"
+      }
+    },
+    {
+      "text": "Bước 1: Khách hàng gửi yêu cầu qua hệ thống ticket nội bộ với category \"Refund Request\".\nBước 2: CS Agent xem xét trong vòng 1 ngày làm việc và xác nhận điều kiện đủ điều kiện.\nBước 3: Nếu đủ điều kiện, chuyển yêu cầu sang Finance Team để xử lý hoàn tiền.\nBước 4: Finance Team xử lý trong 3-5 ngày làm việc và thông báo kết quả cho khách hàng.",
+      "source": "policy/refund-v4.pdf",
+      "score": 0.3726,
+      "metadata": {
+        "section": "Điều 4: Quy trình xử lý yêu cầu hoàn tiền",
+        "access": "internal",
+        "department": "CS",
+        "source": "policy/refund-v4.pdf",
+        "effective_date": "2026-02-01"
+      }
+    },
+    {
+      "text": "Chính sách này áp dụng cho tất cả các đơn hàng được đặt trên hệ thống nội bộ kể từ ngày 01/02/2026.\nCác đơn hàng đặt trước ngày có hiệu lực sẽ áp dụng theo chính sách hoàn tiền phiên bản 3.",
+      "source": "policy/refund-v4.pdf",
+      "score": 0.3666,
+      "metadata": {
+        "access": "internal",
+        "section": "Điều 1: Phạm vi áp dụng",
+        "effective_date": "2026-02-01",
+        "source": "policy/refund-v4.pdf",
+        "department": "CS"
+      }
+    }
+  ],
+  "retrieved_sources": [
+    "policy/refund-v4.pdf",
+    "support/helpdesk-faq.md"
+  ],
+  "policy_result": {
+    "policy_applies": null,
+    "policy_name": "refund_policy_v3",
+    "exceptions_found": [],
+    "source": [
+      "policy/refund-v4.pdf",
+      "support/helpdesk-faq.md"
+    ],
+    "policy_version_note": "Phát hiện đơn hàng ngày 31/01/2026 → thuộc phạm vi policy v3 (trước 01/02/2026). Policy v3 không có trong bộ tài liệu hiện tại nên chưa thể kết luận chắc chắn.",
+    "needs_human_review": true,
+    "explanation": "Không đủ căn cứ kết luận vì đơn hàng thuộc policy v3, trong khi tài liệu hiện có chỉ phản ánh policy mới hơn."
+  },
+  "mcp_tools_used": [],
+  "final_answer": "Khách hàng đặt đơn ngày 31/01/2026 và yêu cầu hoàn tiền ngày 07/02/2026. Sản phẩm lỗi nhà sản xuất, chưa kích hoạt, không phải Flash Sale. Tuy nhiên, đơn hàng này thuộc phạm vi policy v3 (trước 01/02/2026), mà chính sách này không có trong bộ tài liệu hiện tại. Do đó, không thể kết luận chắc chắn về việc có được hoàn tiền hay không.\n\nChi tiết liên quan có trong context:\n- Đơn hàng được đặt vào ngày 31/01/2026.\n- Yêu cầu hoàn tiền được gửi vào ngày 07/02/2026.\n- Sản phẩm bị lỗi do nhà sản xuất.\n- Sản phẩm chưa được kích hoạt.\n- Không phải sản phẩm thuộc danh mục hàng kỹ thuật số hay đơn hàng Flash Sale.\n\nKết luận: Không thể kết luận (thiếu tài liệu phiên bản v3).",
+  "sources": [
+    "policy/refund-v4.pdf",
+    "support/helpdesk-faq.md"
+  ],
+  "confidence": 0.35,
+  "history": [
+    "[supervisor] received task: Khách hàng đặt đơn ngày 31/01/2026 và yêu cầu hoàn tiền ngày 07/02/2026. Sản phẩ",
+    "[supervisor] route=policy_tool_worker reason=policy/access signal detected: hoàn tiền, flash sale → route policy_tool_worker (prefer MCP) | choose MCP=yes",
+    "[retrieval_worker] retrieved 5 chunks from ['policy/refund-v4.pdf', 'support/helpdesk-faq.md']",
+    "[policy_tool_worker] policy_applies=None, exceptions=0, policy=refund_policy_v3",
+    "[synthesis_worker] answer generated, confidence=0.35, sources=['policy/refund-v4.pdf', 'support/helpdesk-faq.md']",
+    "[graph] completed in 11784ms via langgraph"
+  ],
+  "workers_called": [
+    "retrieval_worker",
+    "policy_tool_worker",
+    "synthesis_worker"
+  ],
+  "supervisor_route": "policy_tool_worker",
+  "latency_ms": 11784,
+  "run_id": "run_20260414_184251",
+  "question_id": "q12"
+}

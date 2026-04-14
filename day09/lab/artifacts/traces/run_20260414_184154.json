@@ -1,0 +1,120 @@
+{
+  "task": "Sản phẩm kỹ thuật số (license key) có được hoàn tiền không?",
+  "route_reason": "policy/access signal detected: hoàn tiền, license → route policy_tool_worker (prefer MCP) | choose MCP=yes",
+  "risk_high": false,
+  "needs_tool": true,
+  "hitl_triggered": false,
+  "retrieved_chunks": [
+    {
+      "text": "Hoàn tiền — Điều kiện áp dụng:\nYêu cầu được gửi trong vòng 7 ngày kể từ thời điểm xác nhận đơn hàng.\n\nNgoại lệ không được hoàn tiền:\n- Sản phẩm thuộc danh mục hàng kỹ thuật số (license key, subscription).\n- Đơn hàng đã áp dụng mã giảm giá đặc biệt theo chương trình khuyến mãi Flash Sale.\n- Sản phẩm đã được kích hoạt hoặc đăng ký tài khoản.",
+      "source": "policy/refund-v4.pdf",
+      "score": 0.5077,
+      "metadata": {
+        "section": "Điều 3: Điều kiện áp dụng và ngoại lệ",
+        "department": "CS",
+        "source": "policy/refund-v4.pdf",
+        "effective_date": "2026-02-01",
+        "access": "internal"
+      }
+    },
+    {
+      "text": "Khách hàng được quyền yêu cầu hoàn tiền khi đáp ứng đủ các điều kiện sau:\n- Sản phẩm bị lỗi do nhà sản xuất, không phải do người dùng.\n- Yêu cầu được gửi trong vòng 7 ngày làm việc kể từ thời điểm xác nhận đơn hàng.\n- Đơn hàng chưa được sử dụng hoặc chưa bị mở seal.",
+      "source": "policy/refund-v4.pdf",
+      "score": 0.3892,
+      "metadata": {
+        "access": "internal",
+        "section": "Điều 2: Điều kiện được hoàn tiền",
+        "department": "CS",
+        "source": "policy/refund-v4.pdf",
+        "effective_date": "2026-02-01"
+      }
+    },
+    {
+      "text": "Q: Tôi cần cài phần mềm mới, phải làm gì?\nA: Gửi yêu cầu qua Jira project IT-SOFTWARE. Line Manager phải phê duyệt trước khi IT cài đặt.\n\nQ: Ai chịu trách nhiệm gia hạn license phần mềm?\nA: IT Procurement team quản lý tất cả license. Nhắc nhở sẽ được gửi 30 ngày trước khi hết hạn.",
+      "source": "support/helpdesk-faq.md",
+      "score": 0.3165,
+      "metadata": {
+        "source": "support/helpdesk-faq.md",
+        "access": "internal",
+        "department": "IT",
+        "effective_date": "2026-01-20",
+        "section": "Section 3: Phần mềm và license"
+      }
+    },
+    {
+      "text": "Q: Laptop mới được cấp sau bao lâu khi vào công ty?\nA: Laptop được cấp trong ngày onboarding đầu tiên. Nếu có vấn đề, liên hệ HR hoặc IT Admin.\n\nQ: Laptop bị hỏng phải báo cáo như thế nào?\nA: Tạo ticket P2 hoặc P3 tùy mức độ nghiêm trọng. Mang thiết bị đến IT Room (tầng 3) để kiểm tra.",
+      "source": "support/helpdesk-faq.md",
+      "score": 0.3116,
+      "metadata": {
+        "department": "IT",
+        "section": "Section 4: Thiết bị và phần cứng",
+        "effective_date": "2026-01-20",
+        "access": "internal",
+        "source": "support/helpdesk-faq.md"
+      }
+    },
+    {
+      "text": "Q: Phần mềm VPN nào công ty dùng?\nA: Công ty sử dụng Cisco AnyConnect. Download tại https://vpn.company.internal/download.\n\nQ: Tôi bị mất kết nối VPN liên tục, phải làm gì?\nA: Kiểm tra kết nối Internet trước. Nếu vẫn lỗi, tạo ticket P3 với log file VPN đính kèm.\n\nQ: VPN có giới hạn số thiết bị không?\nA: Mỗi tài khoản được kết nối VPN trên tối đa 2 thiết bị cùng lúc.",
+      "source": "support/helpdesk-faq.md",
+      "score": 0.3092,
+      "metadata": {
+        "effective_date": "2026-01-20",
+        "access": "internal",
+        "department": "IT",
+        "source": "support/helpdesk-faq.md",
+        "section": "Section 2: VPN và kết nối từ xa"
+      }
+    }
+  ],
+  "retrieved_sources": [
+    "policy/refund-v4.pdf",
+    "support/helpdesk-faq.md"
+  ],
+  "policy_result": {
+    "policy_applies": false,
+    "policy_name": "refund_policy_v4",
+    "exceptions_found": [
+      {
+        "type": "flash_sale_exception",
+        "rule": "Đơn hàng Flash Sale không được hoàn tiền (Điều 3, chính sách v4).",
+        "source": "policy_refund_v4.txt"
+      },
+      {
+        "type": "digital_product_exception",
+        "rule": "Sản phẩm kỹ thuật số (license key, subscription) không được hoàn tiền (Điều 3, chính sách v4).",
+        "source": "policy_refund_v4.txt"
+      }
+    ],
+    "source": [
+      "policy/refund-v4.pdf",
+      "support/helpdesk-faq.md"
+    ],
+    "policy_version_note": "",
+    "needs_human_review": false,
+    "explanation": "Analyzed via rule-based policy check. Phát hiện exception nên policy hoàn tiền không áp dụng."
+  },
+  "mcp_tools_used": [],
+  "final_answer": "Sản phẩm kỹ thuật số (license key) không được hoàn tiền. Cụ thể, theo chính sách hoàn tiền, có các điều kiện và ngoại lệ như sau:\n\n1. **Điều kiện hoàn tiền**:\n   - Yêu cầu hoàn tiền phải được gửi trong vòng 7 ngày kể từ thời điểm xác nhận đơn hàng [1].\n\n2. **Ngoại lệ không được hoàn tiền**:\n   - Sản phẩm thuộc danh mục hàng kỹ thuật số (bao gồm license key và subscription) không được hoàn tiền [1].\n   - Đơn hàng đã áp dụng mã giảm giá đặc biệt theo chương trình khuyến mãi Flash Sale cũng không được hoàn tiền [1].\n   - Sản phẩm đã được kích hoạt hoặc đăng ký tài khoản không đủ điều kiện hoàn tiền [1].\n\nKết luận: **Không được** hoàn tiền cho sản phẩm kỹ thuật số (license key).",
+  "sources": [
+    "policy/refund-v4.pdf",
+    "support/helpdesk-faq.md"
+  ],
+  "confidence": 0.27,
+  "history": [
+    "[supervisor] received task: Sản phẩm kỹ thuật số (license key) có được hoàn tiền không?",
+    "[supervisor] route=policy_tool_worker reason=policy/access signal detected: hoàn tiền, license → route policy_tool_worker (prefer MCP) | choose MCP=yes",
+    "[retrieval_worker] retrieved 5 chunks from ['policy/refund-v4.pdf', 'support/helpdesk-faq.md']",
+    "[policy_tool_worker] policy_applies=False, exceptions=2, policy=refund_policy_v4",
+    "[synthesis_worker] answer generated, confidence=0.27, sources=['policy/refund-v4.pdf', 'support/helpdesk-faq.md']",
+    "[graph] completed in 11773ms via langgraph"
+  ],
+  "workers_called": [
+    "retrieval_worker",
+    "policy_tool_worker",
+    "synthesis_worker"
+  ],
+  "supervisor_route": "policy_tool_worker",
+  "latency_ms": 11773,
+  "run_id": "run_20260414_184154",
+  "question_id": "q07"
+}

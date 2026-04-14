@@ -1,0 +1,135 @@
+{
+  "task": "Contractor cần Admin Access (Level 3) để khắc phục sự cố P1 đang active. Quy trình cấp quyền tạm thời như thế nào?",
+  "route_reason": "policy/access signal detected: cấp quyền, access, level 3 → route policy_tool_worker (prefer MCP) | choose MCP=yes",
+  "risk_high": false,
+  "needs_tool": true,
+  "hitl_triggered": false,
+  "retrieved_chunks": [
+    {
+      "text": "Escalation chỉ áp dụng khi cần thay đổi quyền hệ thống ngoài quy trình thông thường.\nVí dụ: Khẩn cấp trong sự cố P1, cần cấp quyền tạm thời để fix incident.\n\nQuy trình escalation khẩn cấp:\n1. On-call IT Admin có thể cấp quyền tạm thời (max 24 giờ) sau khi được Tech Lead phê duyệt bằng lời.\n2. Sau 24 giờ, phải có ticket chính thức hoặc quyền bị thu hồi tự động.\n3. Mọi quyền tạm thời phải được ghi log vào hệ thống Security Audit.",
+      "source": "it/access-control-sop.md",
+      "score": 0.593,
+      "metadata": {
+        "effective_date": "2026-01-01",
+        "source": "it/access-control-sop.md",
+        "department": "IT Security",
+        "section": "Section 4: Escalation khi cần thay đổi quyền hệ thống",
+        "access": "internal"
+      }
+    },
+    {
+      "text": "Tài liệu này quy định quy trình cấp phép truy cập vào các hệ thống nội bộ của công ty.\nÁp dụng cho tất cả nhân viên, contractor, và third-party vendor.",
+      "source": "it/access-control-sop.md",
+      "score": 0.5642,
+      "metadata": {
+        "department": "IT Security",
+        "effective_date": "2026-01-01",
+        "access": "internal",
+        "section": "Section 1: Phạm vi và mục đích",
+        "source": "it/access-control-sop.md"
+      }
+    },
+    {
+      "text": "Quyền phải được thu hồi trong các trường hợp:\n- Nhân viên nghỉ việc: Thu hồi ngay trong ngày cuối.\n- Hết hạn contract: Thu hồi đúng ngày hết hạn.\n- Chuyển bộ phận: Điều chỉnh trong 3 ngày làm việc.",
+      "source": "it/access-control-sop.md",
+      "score": 0.543,
+      "metadata": {
+        "effective_date": "2026-01-01",
+        "access": "internal",
+        "source": "it/access-control-sop.md",
+        "section": "Section 5: Thu hồi quyền truy cập",
+        "department": "IT Security"
+      }
+    },
+    {
+      "text": "P1 — CRITICAL (Khẩn cấp):\nĐịnh nghĩa: Sự cố ảnh hưởng toàn bộ hệ thống production, không có workaround.\nVí dụ: Database sập, API gateway down, toàn bộ người dùng không thể đăng nhập.\n\nP2 — HIGH (Nghiêm trọng):\nĐịnh nghĩa: Sự cố ảnh hưởng một phần hệ thống, có workaround tạm thời.\nVí dụ: Một số tính năng không hoạt động, ảnh hưởng một nhóm người dùng.\n\nP3 — MEDIUM (Trung bình):\nĐịnh nghĩa: Lỗi ảnh hưởng không đáng kể, người dùng vẫn làm việc được.\n\nP4 — LOW (Thấp):\nĐịnh nghĩa: Yêu cầu cải tiến, gợi ý, hoặc lỗi giao diện nhỏ.",
+      "source": "support/sla-p1-2026.pdf",
+      "score": 0.5352,
+      "metadata": {
+        "effective_date": "2026-01-15",
+        "section": "Phần 1: Định nghĩa mức độ ưu tiên",
+        "source": "support/sla-p1-2026.pdf",
+        "access": "internal",
+        "department": "IT"
+      }
+    },
+    {
+      "text": "Bước 1: Nhân viên tạo Access Request ticket trên Jira (project IT-ACCESS).\nBước 2: Line Manager phê duyệt yêu cầu trong 1 ngày làm việc.\nBước 3: IT Admin kiểm tra compliance và cấp quyền.\nBước 4: IT Security review với Level 3 và Level 4.\nBước 5: Nhân viên nhận thông báo qua email khi quyền được cấp.",
+      "source": "it/access-control-sop.md",
+      "score": 0.4966,
+      "metadata": {
+        "effective_date": "2026-01-01",
+        "source": "it/access-control-sop.md",
+        "access": "internal",
+        "section": "Section 3: Quy trình yêu cầu cấp quyền",
+        "department": "IT Security"
+      }
+    }
+  ],
+  "retrieved_sources": [
+    "it/access-control-sop.md",
+    "support/sla-p1-2026.pdf"
+  ],
+  "policy_result": {
+    "policy_applies": true,
+    "policy_name": "refund_policy_v4",
+    "exceptions_found": [],
+    "source": [
+      "it/access-control-sop.md",
+      "support/sla-p1-2026.pdf"
+    ],
+    "policy_version_note": "",
+    "needs_human_review": false,
+    "explanation": "Analyzed via rule-based policy check. Không phát hiện exception rõ ràng trong task/context hiện tại."
+  },
+  "mcp_tools_used": [
+    {
+      "tool": "get_ticket_info",
+      "input": {
+        "ticket_id": "P1-LATEST"
+      },
+      "output": {
+        "ticket_id": "IT-9847",
+        "priority": "P1",
+        "title": "API Gateway down — toàn bộ người dùng không đăng nhập được",
+        "status": "in_progress",
+        "assignee": "nguyen.van.a@company.internal",
+        "created_at": "2026-04-13T22:47:00",
+        "sla_deadline": "2026-04-14T02:47:00",
+        "escalated": true,
+        "escalated_to": "senior_engineer_team",
+        "notifications_sent": [
+          "slack:#incident-p1",
+          "email:incident@company.internal",
+          "pagerduty:oncall"
+        ]
+      },
+      "error": null,
+      "timestamp": "2026-04-14T18:43:10.977642"
+    }
+  ],
+  "final_answer": "Quy trình cấp quyền tạm thời cho Contractor cần Admin Access (Level 3) để khắc phục sự cố P1 đang active như sau:\n\n1. **Phê duyệt**: On-call IT Admin có thể cấp quyền tạm thời (max 24 giờ) sau khi được Tech Lead phê duyệt bằng lời. \n2. **Thời gian**: Quyền tạm thời chỉ có hiệu lực trong tối đa 24 giờ.\n3. **Ticket chính thức**: Sau 24 giờ, phải có ticket chính thức hoặc quyền sẽ bị thu hồi tự động.\n4. **Ghi log**: Mọi quyền tạm thời phải được ghi log vào hệ thống Security Audit.\n\n**Lưu ý**: Quy trình này áp dụng trong trường hợp khẩn cấp, cụ thể là sự cố P1, khi cần cấp quyền tạm thời để fix incident [1][2].\n\nKết luận: Được.",
+  "sources": [
+    "it/access-control-sop.md",
+    "support/sla-p1-2026.pdf"
+  ],
+  "confidence": 0.55,
+  "history": [
+    "[supervisor] received task: Contractor cần Admin Access (Level 3) để khắc phục sự cố P1 đang active. Quy trì",
+    "[supervisor] route=policy_tool_worker reason=policy/access signal detected: cấp quyền, access, level 3 → route policy_tool_worker (prefer MCP) | choose MCP=yes",
+    "[retrieval_worker] retrieved 5 chunks from ['it/access-control-sop.md', 'support/sla-p1-2026.pdf']",
+    "[policy_tool_worker] called MCP get_ticket_info",
+    "[policy_tool_worker] policy_applies=True, exceptions=0, policy=refund_policy_v4",
+    "[synthesis_worker] answer generated, confidence=0.55, sources=['it/access-control-sop.md', 'support/sla-p1-2026.pdf']",
+    "[graph] completed in 12395ms via langgraph"
+  ],
+  "workers_called": [
+    "retrieval_worker",
+    "policy_tool_worker",
+    "synthesis_worker"
+  ],
+  "supervisor_route": "policy_tool_worker",
+  "latency_ms": 12395,
+  "run_id": "run_20260414_184302",
+  "question_id": "q13"
+}

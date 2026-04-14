@@ -1,0 +1,29 @@
+{
+  "task": "SLA xử lý ticket P1 là bao lâu?",
+  "route_reason": "SLA/ticket retrieval signal detected: p1, sla, ticket → route retrieval_worker | choose MCP=no",
+  "risk_high": false,
+  "needs_tool": false,
+  "hitl_triggered": false,
+  "retrieved_chunks": [],
+  "retrieved_sources": [],
+  "policy_result": {},
+  "mcp_tools_used": [],
+  "final_answer": "Thông tin này không có trong tài liệu nội bộ hiện có.",
+  "sources": [],
+  "confidence": 0.15,
+  "history": [
+    "[supervisor] received task: SLA xử lý ticket P1 là bao lâu?",
+    "[supervisor] route=retrieval_worker reason=SLA/ticket retrieval signal detected: p1, sla, ticket → route retrieval_worker | choose MCP=no",
+    "[retrieval_worker] ERROR: [WinError 1] Incorrect function",
+    "[synthesis_worker] answer generated, confidence=0.15, sources=[]",
+    "[graph] completed in 11302ms via langgraph"
+  ],
+  "workers_called": [
+    "retrieval_worker",
+    "synthesis_worker"
+  ],
+  "supervisor_route": "retrieval_worker",
+  "latency_ms": 11302,
+  "run_id": "run_20260414_183759",
+  "question_id": "q01"
+}

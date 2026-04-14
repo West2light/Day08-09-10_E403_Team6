@@ -1,50 +1,72 @@
 {
-  "generated_at": "2026-04-14T17:39:02.826807",
+  "generated_at": "2026-04-14T19:03:20.613775",
   "day08_single_agent": {
-    "total_questions": 15,
-    "avg_confidence": 0.0,
-    "avg_latency_ms": 0,
-    "abstain_rate": "?",
-    "multi_hop_accuracy": "?"
+    "total_questions": 10,
+    "avg_confidence": 0.9,
+    "avg_latency_ms": 1681.9,
+    "abstain_rate": "2/10 (20%)",
+    "multi_hop_accuracy": "2/3 (67%)",
+    "scorecard": {
+      "avg_faithfulness": 4.5,
+      "avg_relevance": 4.2,
+      "avg_context_recall": 5.0,
+      "avg_completeness": 3.8,
+      "avg_confidence_proxy": 0.9,
+      "abstain_rate": "2/10 (20%)",
+      "multi_hop_accuracy": "2/3 (67%)",
+      "avg_latency_ms_estimated": 1681.9,
+      "accuracy_by_category": {
+        "SLA": "2/2",
+        "Refund": "3/3",
+        "Access Control": "2/2",
+        "IT Helpdesk": "1/1",
+        "HR Policy": "1/1",
+        "Insufficient Context": "0/1"
+      }
+    }
   },
   "day09_multi_agent": {
-    "total_traces": 45,
+    "total_traces": 95,
     "routing_distribution": {
-      "retrieval_worker": "24/45 (53%)",
-      "policy_tool_worker": "21/45 (46%)"
+      "retrieval_worker": "41/95 (43%)",
+      "policy_tool_worker": "54/95 (56%)"
     },
-    "avg_confidence": 0.224,
-    "avg_latency_ms": 8613,
-    "mcp_usage_rate": "16/45 (35%)",
-    "hitl_rate": "3/45 (6%)",
+    "avg_confidence": 0.3,
+    "avg_latency_ms": 11319,
+    "mcp_usage_rate": "31/95 (32%)",
+    "hitl_rate": "6/95 (6%)",
+    "abstain_rate": "41/95 (43%)",
+    "multi_hop_accuracy": "24/24 (100%)",
+    "abstain_accuracy": "5/6 (83%)",
     "top_sources": [
       [
         "it/access-control-sop.md",
-        9
-      ],
-      [
-        "support/sla-p1-2026.pdf",
-        6
+        41
       ],
       [
         "policy/refund-v4.pdf",
-        5
+        28
+      ],
+      [
+        "support/sla-p1-2026.pdf",
+        24
       ],
       [
         "support/helpdesk-faq.md",
-        4
+        18
       ],
       [
         "hr/leave-policy-2026.pdf",
-        3
+        13
       ]
     ]
   },
   "analysis": {
     "routing_visibility": "Day 09 có route_reason cho từng câu → dễ debug hơn Day 08",
-    "latency_delta": "TODO: Điền delta latency thực tế",
-    "accuracy_delta": "TODO: Điền delta accuracy thực tế từ grading",
+    "latency_delta": "+9637 ms",
+    "confidence_delta": "-0.600",
     "debuggability": "Multi-agent: có thể test từng worker độc lập. Single-agent: không thể.",
-    "mcp_benefit": "Day 09 có thể extend capability qua MCP không cần sửa core. Day 08 phải hard-code."
+    "mcp_benefit": "Day 09 có thể extend capability qua MCP không cần sửa core. Day 08 phải hard-code.",
+    "day08_metrics_source": "D:\\2025.2\\assignments\\Day08-09-10_E403_Team6\\day08\\lab\\results\\day08_metrics.json"
   }
 }

@@ -24,13 +24,13 @@ WORKER_NAME = "synthesis_worker"
 SYSTEM_PROMPT = """Bạn là trợ lý IT Helpdesk nội bộ.
 
 Quy tắc nghiêm ngặt:
-1. CHỈ trả lời dựa vào context được cung cấp. KHÔNG dùng kiến thức ngoài.
-2. Nếu context không đủ hoặc KHÔNG có thông tin cụ thể được hỏi → nói rõ "Thông tin này không có trong tài liệu nội bộ hiện có." Đặc biệt: nếu hỏi về con số, mức phạt, thời hạn cụ thể mà context không nêu → PHẢI abstain, không được bịa.
-3. Dùng citation dạng [1], [2] theo danh sách evidence được đánh số trong context.
+1. CHỈ trả lời dựa vào context được cung cấp. TUYỆT ĐỐI không dùng kiến thức ngoài hoặc suy diễn thêm.
+2. Nếu POLICY RESULT có ghi "policy_applies: None" hoặc "policy_version_note" → PHẢI nêu rõ phiên bản chính sách không có trong tài liệu, KHÔNG kết luận được/không được, KHÔNG áp dụng thông tin từ phiên bản khác.
+3. Nếu thông tin cụ thể được hỏi KHÔNG xuất hiện trong context → nói "Thông tin này không có trong tài liệu nội bộ hiện có." Không bịa số liệu, con số, điều kiện.
 4. Nếu câu hỏi yêu cầu liệt kê nhiều chi tiết (ai, kênh nào, thời gian, điều kiện) → liệt kê ĐẦY ĐỦ tất cả chi tiết có trong context, không bỏ sót.
-5. Nếu có exceptions/ngoại lệ hoặc policy note quan trọng → nêu TRƯỚC khi kết luận.
-6. Kết luận phải RÕ RÀNG: "Được" / "Không được" / "Không có thông tin" — không mơ hồ.
-7. Với câu hỏi về điều kiện eligibility (ai được/không được): nêu kết luận trước, lý do sau.
+5. Với exception override: nếu có exception (Flash Sale, digital product...) → exception LUÔN thắng, dù sản phẩm lỗi hay trong thời hạn.
+6. Kết luận phải RÕ RÀNG: "Được" / "Không được" / "Không thể kết luận (thiếu tài liệu phiên bản X)" — không mơ hồ.
+7. Dùng citation dạng [1], [2] theo thứ tự evidence trong context.
 """
 
 
@@ -91,6 +91,17 @@ def _build_context(chunks: list, policy_result: dict) -> str:
     """Xây dựng context string từ chunks và policy result."""
     parts = []
 
+    # Nếu policy_applies=None (thiếu version), đặt cảnh báo LÊN ĐẦU để LLM không bị nhầm
+    version_note = policy_result.get("policy_version_note") if policy_result else None
+    policy_applies = policy_result.get("policy_applies") if policy_result else "N/A"
+    if policy_result and policy_applies is None and version_note:
+        parts.append(
+            f"=== CẢNH BÁO QUAN TRỌNG ===\n"
+            f"{version_note}\n"
+            f"⚠️ EVIDENCE bên dưới thuộc policy phiên bản KHÁC — KHÔNG được dùng để kết luận cho câu hỏi này.\n"
+            f"Kết luận bắt buộc: KHÔNG THỂ XÁC ĐỊNH vì thiếu tài liệu phiên bản áp dụng."
+        )
+
     if chunks:
         parts.append("=== EVIDENCE ===")
         for i, chunk in enumerate(chunks, 1):
@@ -108,8 +119,8 @@ def _build_context(chunks: list, policy_result: dict) -> str:
         if "policy_applies" in policy_result:
             policy_lines.append(f"- policy_applies: {policy_result.get('policy_applies')}")
 
-        if policy_result.get("policy_version_note"):
-            policy_lines.append(f"- policy_version_note: {policy_result.get('policy_version_note')}")
+        if version_note:
+            policy_lines.append(f"- policy_version_note: {version_note}")
 
         if policy_result.get("needs_human_review") is True:
             policy_lines.append("- needs_human_review: True")
@@ -279,11 +290,11 @@ def synthesize(task: str, chunks: list, policy_result: dict) -> dict:
 {context}
 
 Yêu cầu trả lời:
-- Nếu câu hỏi hỏi về nhiều chi tiết (ai nhận thông báo, kênh nào, thời gian, điều kiện) → liệt kê ĐẦY ĐỦ tất cả chi tiết có trong context (ví dụ: Slack #incident-p1, email incident@company.internal, PagerDuty đều phải nêu nếu context có).
-- Nếu thông tin được hỏi KHÔNG có trong context → nói rõ "Thông tin này không có trong tài liệu nội bộ hiện có." KHÔNG bịa số liệu.
-- Kết luận phải rõ ràng (Được / Không được / Không có thông tin).
-- Ưu tiên nêu ngoại lệ/policy note trước nếu có.
-- Bắt buộc dùng citation dạng [1], [2] theo thứ tự evidence.""",
+- Liệt kê ĐẦY ĐỦ mọi chi tiết liên quan có trong context (kênh thông báo, tên người phê duyệt, điều kiện, thời gian...).
+- Nếu policy result có "policy_applies: None" hoặc "policy_version_note" về version khác → PHẢI nêu rõ không thể kết luận vì thiếu tài liệu phiên bản đó, KHÔNG áp dụng thông tin từ policy khác.
+- Nếu thông tin được hỏi KHÔNG có trong context → nói "Thông tin này không có trong tài liệu nội bộ hiện có."
+- Với access control: nêu rõ từng level có bao nhiêu người phê duyệt và ai, phân biệt quy trình thường vs emergency bypass.
+- Kết luận rõ ràng. Citation [1], [2] bắt buộc.""",
         },
     ]
 

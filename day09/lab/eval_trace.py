@@ -169,6 +169,8 @@ def analyze_traces(traces_dir: str = "artifacts/traces") -> dict:
     - avg_latency_ms: latency trung bình
     - mcp_usage_rate: % câu có MCP tool call
     - hitl_rate: % câu trigger HITL
+    - abstain_rate: % câu trả về "không đủ thông tin"
+    - multi_hop_accuracy: % câu multi-hop (test_type multi_worker/temporal_scoping) route đúng
     - source_coverage: các tài liệu nào được dùng nhiều nhất
 
     Returns:
@@ -185,8 +187,16 @@ def analyze_traces(traces_dir: str = "artifacts/traces") -> dict:
 
     traces = []
     for fname in trace_files:
-        with open(os.path.join(traces_dir, fname),  encoding="utf-8") as f:
+        with open(os.path.join(traces_dir, fname), encoding="utf-8") as f:
             traces.append(json.load(f))
+
+    # Load test_questions để biết test_type và expected_route của từng câu
+    test_q_path = os.path.join(os.path.dirname(__file__), "data", "test_questions.json")
+    test_q_map = {}   # id -> question metadata
+    if os.path.exists(test_q_path):
+        with open(test_q_path, encoding="utf-8") as f:
+            for q in json.load(f):
+                test_q_map[q["id"]] = q
 
     # Compute metrics
     routing_counts = {}
@@ -195,6 +205,17 @@ def analyze_traces(traces_dir: str = "artifacts/traces") -> dict:
     mcp_calls = 0
     hitl_triggers = 0
     source_counts = {}
+    abstain_count = 0
+
+    # Multi-hop: test_type thuộc các loại cần cross-doc reasoning
+    MULTIHOP_TYPES = {"multi_worker", "multi_worker_multi_doc", "temporal_scoping", "multi_detail"}
+    multihop_correct = 0
+    multihop_total = 0
+
+    # Abstain: câu hỏi không có thông tin trong docs
+    ABSTAIN_TYPES = {"abstain"}
+    abstain_correct = 0
+    abstain_total = 0
 
     for t in traces:
         route = t.get("supervisor_route", "unknown")
@@ -217,7 +238,40 @@ def analyze_traces(traces_dir: str = "artifacts/traces") -> dict:
         for src in t.get("retrieved_sources", []):
             source_counts[src] = source_counts.get(src, 0) + 1
 
+        # Abstain rate: answer chứa "không đủ thông tin" hoặc "không có trong tài liệu"
+        answer = (t.get("final_answer") or "").lower()
+        if "không đủ thông tin" in answer or "không có trong tài liệu" in answer:
+            abstain_count += 1
+
+        # Multi-hop accuracy và abstain accuracy dựa theo test_questions metadata
+        qid = t.get("question_id", "")
+        q_meta = test_q_map.get(qid, {})
+        test_type = q_meta.get("test_type", "")
+        expected_route = q_meta.get("expected_route", "")
+
+        if test_type in MULTIHOP_TYPES:
+            multihop_total += 1
+            # Coi là "đúng" nếu route khớp expected_route
+            if expected_route and route == expected_route:
+                multihop_correct += 1
+
+        if test_type in ABSTAIN_TYPES:
+            abstain_total += 1
+            # Coi là "đúng" nếu model abstain
+            if "không đủ thông tin" in answer or "không có trong tài liệu" in answer:
+                abstain_correct += 1
+
     total = len(traces)
+
+    multihop_acc = (
+        f"{multihop_correct}/{multihop_total} ({100*multihop_correct//multihop_total}%)"
+        if multihop_total else "N/A (không có trace multi-hop)"
+    )
+    abstain_acc = (
+        f"{abstain_correct}/{abstain_total} ({100*abstain_correct//abstain_total}%)"
+        if abstain_total else "N/A"
+    )
+
     metrics = {
         "total_traces": total,
         "routing_distribution": {k: f"{v}/{total} ({100*v//total}%)" for k, v in routing_counts.items()},
@@ -225,6 +279,9 @@ def analyze_traces(traces_dir: str = "artifacts/traces") -> dict:
         "avg_latency_ms": round(sum(latencies) / len(latencies)) if latencies else 0,
         "mcp_usage_rate": f"{mcp_calls}/{total} ({100*mcp_calls//total}%)" if total else "0%",
         "hitl_rate": f"{hitl_triggers}/{total} ({100*hitl_triggers//total}%)" if total else "0%",
+        "abstain_rate": f"{abstain_count}/{total} ({100*abstain_count//total}%)" if total else "0%",
+        "multi_hop_accuracy": multihop_acc,
+        "abstain_accuracy": abstain_acc,
         "top_sources": sorted(source_counts.items(), key=lambda x: -x[1])[:5],
     }
 
@@ -242,26 +299,64 @@ def compare_single_vs_multi(
     """
     So sánh Day 08 (single agent RAG) vs Day 09 (multi-agent).
 
-    TODO Sprint 4: Điền kết quả thực tế từ Day 08 vào day08_baseline.
+    Day 08 metrics được load từ:
+        ../../day08/lab/results/day08_metrics.json   (tạo bởi eval_metrics_day08.py)
+    Hoặc truyền qua tham số day08_results_file.
 
     Returns:
         dict của comparison metrics
     """
     multi_metrics = analyze_traces(multi_traces_dir)
 
-    # TODO: Load Day 08 results nếu có
-    # Nếu không có, dùng baseline giả lập để format
+    # Fallback mặc định nếu không tìm thấy file
     day08_baseline = {
-        "total_questions": 15,
-        "avg_confidence": 0.0,          # TODO: Điền từ Day 08 eval.py
-        "avg_latency_ms": 0,            # TODO: Điền từ Day 08
-        "abstain_rate": "?",            # TODO: Điền từ Day 08
-        "multi_hop_accuracy": "?",      # TODO: Điền từ Day 08
+        "total_questions": 10,
+        "avg_confidence": None,
+        "avg_latency_ms": None,
+        "abstain_rate": "N/A",
+        "multi_hop_accuracy": "N/A",
     }
 
-    if day08_results_file and os.path.exists(day08_results_file):
-        with open(day08_results_file) as f:
-            day08_baseline = json.load(f)
+    # Tìm file metrics Day 08 — thử theo thứ tự ưu tiên
+    candidates = []
+    if day08_results_file:
+        candidates.append(day08_results_file)
+    candidates += [
+        os.path.join(os.path.dirname(__file__), "../../day08/lab/results/day08_metrics.json"),
+        os.path.join(os.path.dirname(__file__), "../../../day08/lab/results/day08_metrics.json"),
+    ]
+
+    loaded_path = None
+    for candidate in candidates:
+        norm = os.path.normpath(candidate)
+        if os.path.exists(norm):
+            with open(norm, encoding="utf-8") as f:
+                raw = json.load(f)
+            # Lấy các trường cần thiết từ file
+            day08_baseline = {
+                "total_questions": raw.get("total_questions", 10),
+                "avg_confidence": raw.get("avg_confidence"),
+                "avg_latency_ms": raw.get("avg_latency_ms"),
+                "abstain_rate": raw.get("abstain_rate", "N/A"),
+                "multi_hop_accuracy": raw.get("multi_hop_accuracy", "N/A"),
+                # Thêm scorecard đầy đủ nếu có
+                "scorecard": raw.get("baseline_dense", {}),
+            }
+            loaded_path = norm
+            break
+
+    # Tính delta latency và confidence nếu có đủ dữ liệu
+    d09_conf = multi_metrics.get("avg_confidence")
+    d08_conf = day08_baseline.get("avg_confidence")
+    conf_delta = (
+        f"{d09_conf - d08_conf:+.3f}" if (d09_conf is not None and d08_conf is not None) else "N/A"
+    )
+
+    d09_lat = multi_metrics.get("avg_latency_ms")
+    d08_lat = day08_baseline.get("avg_latency_ms")
+    lat_delta = (
+        f"{d09_lat - d08_lat:+.0f} ms" if (d09_lat is not None and d08_lat is not None) else "N/A"
+    )
 
     comparison = {
         "generated_at": datetime.now().isoformat(),
@@ -269,10 +364,11 @@ def compare_single_vs_multi(
         "day09_multi_agent": multi_metrics,
         "analysis": {
             "routing_visibility": "Day 09 có route_reason cho từng câu → dễ debug hơn Day 08",
-            "latency_delta": "TODO: Điền delta latency thực tế",
-            "accuracy_delta": "TODO: Điền delta accuracy thực tế từ grading",
+            "latency_delta": lat_delta,
+            "confidence_delta": conf_delta,
             "debuggability": "Multi-agent: có thể test từng worker độc lập. Single-agent: không thể.",
             "mcp_benefit": "Day 09 có thể extend capability qua MCP không cần sửa core. Day 08 phải hard-code.",
+            "day08_metrics_source": loaded_path or "không tìm thấy — chạy day08/lab/eval_metrics_day08.py",
         },
     }
 

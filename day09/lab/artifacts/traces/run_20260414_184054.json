@@ -1,0 +1,123 @@
+{
+  "task": "Khách hàng có thể yêu cầu hoàn tiền trong bao nhiêu ngày?",
+  "route_reason": "policy/access signal detected: hoàn tiền → route policy_tool_worker (prefer MCP) | choose MCP=yes",
+  "risk_high": false,
+  "needs_tool": true,
+  "hitl_triggered": false,
+  "retrieved_chunks": [
+    {
+      "text": "Khách hàng được quyền yêu cầu hoàn tiền khi đáp ứng đủ các điều kiện sau:\n- Sản phẩm bị lỗi do nhà sản xuất, không phải do người dùng.\n- Yêu cầu được gửi trong vòng 7 ngày làm việc kể từ thời điểm xác nhận đơn hàng.\n- Đơn hàng chưa được sử dụng hoặc chưa bị mở seal.",
+      "source": "policy/refund-v4.pdf",
+      "score": 0.6762,
+      "metadata": {
+        "section": "Điều 2: Điều kiện được hoàn tiền",
+        "source": "policy/refund-v4.pdf",
+        "department": "CS",
+        "effective_date": "2026-02-01",
+        "access": "internal"
+      }
+    },
+    {
+      "text": "Bước 1: Khách hàng gửi yêu cầu qua hệ thống ticket nội bộ với category \"Refund Request\".\nBước 2: CS Agent xem xét trong vòng 1 ngày làm việc và xác nhận điều kiện đủ điều kiện.\nBước 3: Nếu đủ điều kiện, chuyển yêu cầu sang Finance Team để xử lý hoàn tiền.\nBước 4: Finance Team xử lý trong 3-5 ngày làm việc và thông báo kết quả cho khách hàng.",
+      "source": "policy/refund-v4.pdf",
+      "score": 0.6179,
+      "metadata": {
+        "source": "policy/refund-v4.pdf",
+        "department": "CS",
+        "section": "Điều 4: Quy trình xử lý yêu cầu hoàn tiền",
+        "effective_date": "2026-02-01",
+        "access": "internal"
+      }
+    },
+    {
+      "text": "1.1 Nghỉ phép năm (Annual Leave):\n- Số ngày: 12 ngày/năm cho nhân viên dưới 3 năm kinh nghiệm.\n- Số ngày: 15 ngày/năm cho nhân viên từ 3-5 năm kinh nghiệm.\n- Số ngày: 18 ngày/năm cho nhân viên trên 5 năm kinh nghiệm.\n- Chuyển năm sau: Tối đa 5 ngày phép năm chưa dùng được chuyển sang năm tiếp theo.\n\n1.2 Nghỉ ốm (Sick Leave):\n- Số ngày: 10 ngày/năm có trả lương.\n- Yêu cầu: Thông báo cho Line Manager trước 9:00 sáng ngày nghỉ.\n- Nếu nghỉ trên 3 ngày liên tiếp: Cần giấy tờ y tế từ bệnh viện.\n\n1.3 Nghỉ thai sản:\n- Nghỉ sinh con: 6 tháng theo quy định Luật Lao động.\n- Nghỉ nuôi con nhỏ: 1 tiếng/ngày trong 12 tháng đầu sau sinh.\n\n1.4 Nghỉ lễ tết:\nTheo lịch nghỉ lễ quốc gia do HR công bố hàng năm vào tháng 12.",
+      "source": "hr/leave-policy-2026.pdf",
+      "score": 0.6016,
+      "metadata": {
+        "source": "hr/leave-policy-2026.pdf",
+        "section": "Phần 1: Các loại nghỉ phép",
+        "effective_date": "2026-01-01",
+        "access": "internal",
+        "department": "HR"
+      }
+    },
+    {
+      "text": "Hoàn tiền — Điều kiện áp dụng:\nYêu cầu được gửi trong vòng 7 ngày kể từ thời điểm xác nhận đơn hàng.\n\nNgoại lệ không được hoàn tiền:\n- Sản phẩm thuộc danh mục hàng kỹ thuật số (license key, subscription).\n- Đơn hàng đã áp dụng mã giảm giá đặc biệt theo chương trình khuyến mãi Flash Sale.\n- Sản phẩm đã được kích hoạt hoặc đăng ký tài khoản.",
+      "source": "policy/refund-v4.pdf",
+      "score": 0.5798,
+      "metadata": {
+        "effective_date": "2026-02-01",
+        "source": "policy/refund-v4.pdf",
+        "section": "Điều 3: Điều kiện áp dụng và ngoại lệ",
+        "department": "CS",
+        "access": "internal"
+      }
+    },
+    {
+      "text": "Quyền phải được thu hồi trong các trường hợp:\n- Nhân viên nghỉ việc: Thu hồi ngay trong ngày cuối.\n- Hết hạn contract: Thu hồi đúng ngày hết hạn.\n- Chuyển bộ phận: Điều chỉnh trong 3 ngày làm việc.",
+      "source": "it/access-control-sop.md",
+      "score": 0.5719,
+      "metadata": {
+        "access": "internal",
+        "source": "it/access-control-sop.md",
+        "department": "IT Security",
+        "effective_date": "2026-01-01",
+        "section": "Section 5: Thu hồi quyền truy cập"
+      }
+    }
+  ],
+  "retrieved_sources": [
+    "policy/refund-v4.pdf",
+    "it/access-control-sop.md",
+    "hr/leave-policy-2026.pdf"
+  ],
+  "policy_result": {
+    "policy_applies": false,
+    "policy_name": "refund_policy_v4",
+    "exceptions_found": [
+      {
+        "type": "flash_sale_exception",
+        "rule": "Đơn hàng Flash Sale không được hoàn tiền (Điều 3, chính sách v4).",
+        "source": "policy_refund_v4.txt"
+      },
+      {
+        "type": "digital_product_exception",
+        "rule": "Sản phẩm kỹ thuật số (license key, subscription) không được hoàn tiền (Điều 3, chính sách v4).",
+        "source": "policy_refund_v4.txt"
+      }
+    ],
+    "source": [
+      "policy/refund-v4.pdf",
+      "it/access-control-sop.md",
+      "hr/leave-policy-2026.pdf"
+    ],
+    "policy_version_note": "",
+    "needs_human_review": false,
+    "explanation": "Analyzed via rule-based policy check. Phát hiện exception nên policy hoàn tiền không áp dụng."
+  },
+  "mcp_tools_used": [],
+  "final_answer": "Khách hàng có thể yêu cầu hoàn tiền trong vòng 7 ngày làm việc kể từ thời điểm xác nhận đơn hàng, với các điều kiện sau:\n\n- Sản phẩm bị lỗi do nhà sản xuất, không phải do người dùng.\n- Đơn hàng chưa được sử dụng hoặc chưa bị mở seal.\n\nQuy trình yêu cầu hoàn tiền như sau:\n\n1. Khách hàng gửi yêu cầu qua hệ thống ticket nội bộ với category \"Refund Request\".\n2. CS Agent xem xét trong vòng 1 ngày làm việc và xác nhận điều kiện đủ điều kiện.\n3. Nếu đủ điều kiện, yêu cầu sẽ được chuyển sang Finance Team để xử lý hoàn tiền.\n4. Finance Team xử lý trong 3-5 ngày làm việc và thông báo kết quả cho khách hàng [1][2].\n\nNgoài ra, có một số ngoại lệ không được hoàn tiền, bao gồm:\n\n- Sản phẩm thuộc danh mục hàng kỹ thuật số (license key, subscription).\n- Đơn hàng đã áp dụng mã giảm giá đặc biệt theo chương trình khuyến mãi Flash Sale.\n- Sản phẩm đã được kích hoạt hoặc đăng ký tài khoản [4].\n\nKết luận: \"Được\" yêu cầu hoàn tiền trong vòng 7 ngày làm việc nếu đáp ứng đủ điều kiện.",
+  "sources": [
+    "policy/refund-v4.pdf",
+    "hr/leave-policy-2026.pdf",
+    "it/access-control-sop.md"
+  ],
+  "confidence": 0.51,
+  "history": [
+    "[supervisor] received task: Khách hàng có thể yêu cầu hoàn tiền trong bao nhiêu ngày?",
+    "[supervisor] route=policy_tool_worker reason=policy/access signal detected: hoàn tiền → route policy_tool_worker (prefer MCP) | choose MCP=yes",
+    "[retrieval_worker] retrieved 5 chunks from ['policy/refund-v4.pdf', 'it/access-control-sop.md', 'hr/leave-policy-2026.pdf']",
+    "[policy_tool_worker] policy_applies=False, exceptions=2, policy=refund_policy_v4",
+    "[synthesis_worker] answer generated, confidence=0.51, sources=['policy/refund-v4.pdf', 'hr/leave-policy-2026.pdf', 'it/access-control-sop.md']",
+    "[graph] completed in 14095ms via langgraph"
+  ],
+  "workers_called": [
+    "retrieval_worker",
+    "policy_tool_worker",
+    "synthesis_worker"
+  ],
+  "supervisor_route": "policy_tool_worker",
+  "latency_ms": 14095,
+  "run_id": "run_20260414_184054",
+  "question_id": "q02"
+}

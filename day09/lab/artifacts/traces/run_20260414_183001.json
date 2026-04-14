@@ -1,0 +1,112 @@
+{
+  "task": "Nhân viên vừa vào thử việc (trong probation period) muốn làm remote vì lý do cá nhân. Điều kiện là gì?",
+  "route_reason": "policy/access signal detected: probation, thử việc, remote → route policy_tool_worker (prefer MCP) | choose MCP=yes",
+  "risk_high": false,
+  "needs_tool": true,
+  "hitl_triggered": false,
+  "retrieved_chunks": [
+    {
+      "text": "4.1 Điều kiện remote:\n- Nhân viên sau probation period có thể làm remote tối đa 2 ngày/tuần.\n- Team Lead phải phê duyệt lịch remote qua HR Portal.\n- Ngày onsite bắt buộc: Thứ 3 và Thứ 5 theo lịch team.\n\n4.2 Yêu cầu kỹ thuật khi remote:\n- Kết nối VPN bắt buộc khi làm việc với hệ thống nội bộ.\n- Camera bật trong các cuộc họp team.",
+      "source": "hr/leave-policy-2026.pdf",
+      "score": 0.6795,
+      "metadata": {
+        "department": "HR",
+        "effective_date": "2026-01-01",
+        "source": "hr/leave-policy-2026.pdf",
+        "section": "Phần 4: Remote work policy",
+        "access": "internal"
+      }
+    },
+    {
+      "text": "Quyền phải được thu hồi trong các trường hợp:\n- Nhân viên nghỉ việc: Thu hồi ngay trong ngày cuối.\n- Hết hạn contract: Thu hồi đúng ngày hết hạn.\n- Chuyển bộ phận: Điều chỉnh trong 3 ngày làm việc.",
+      "source": "it/access-control-sop.md",
+      "score": 0.4226,
+      "metadata": {
+        "access": "internal",
+        "section": "Section 5: Thu hồi quyền truy cập",
+        "source": "it/access-control-sop.md",
+        "department": "IT Security",
+        "effective_date": "2026-01-01"
+      }
+    },
+    {
+      "text": "Bước 1: Nhân viên gửi yêu cầu nghỉ phép qua hệ thống HR Portal (https://hr.company.internal) ít nhất 3 ngày làm việc trước ngày nghỉ.\nBước 2: Line Manager phê duyệt hoặc từ chối trong vòng 1 ngày làm việc.\nBước 3: Nhân viên nhận thông báo qua email sau khi được phê duyệt.\n\nTrường hợp khẩn cấp: Có thể gửi yêu cầu muộn hơn nhưng phải được Line Manager đồng ý qua tin nhắn trực tiếp.",
+      "source": "hr/leave-policy-2026.pdf",
+      "score": 0.4085,
+      "metadata": {
+        "effective_date": "2026-01-01",
+        "department": "HR",
+        "section": "Phần 2: Quy trình xin nghỉ phép",
+        "access": "internal",
+        "source": "hr/leave-policy-2026.pdf"
+      }
+    },
+    {
+      "text": "Escalation chỉ áp dụng khi cần thay đổi quyền hệ thống ngoài quy trình thông thường.\nVí dụ: Khẩn cấp trong sự cố P1, cần cấp quyền tạm thời để fix incident.\n\nQuy trình escalation khẩn cấp:\n1. On-call IT Admin có thể cấp quyền tạm thời (max 24 giờ) sau khi được Tech Lead phê duyệt bằng lời.\n2. Sau 24 giờ, phải có ticket chính thức hoặc quyền bị thu hồi tự động.\n3. Mọi quyền tạm thời phải được ghi log vào hệ thống Security Audit.",
+      "source": "it/access-control-sop.md",
+      "score": 0.4022,
+      "metadata": {
+        "effective_date": "2026-01-01",
+        "source": "it/access-control-sop.md",
+        "department": "IT Security",
+        "access": "internal",
+        "section": "Section 4: Escalation khi cần thay đổi quyền hệ thống"
+      }
+    },
+    {
+      "text": "Bước 1: Khách hàng gửi yêu cầu qua hệ thống ticket nội bộ với category \"Refund Request\".\nBước 2: CS Agent xem xét trong vòng 1 ngày làm việc và xác nhận điều kiện đủ điều kiện.\nBước 3: Nếu đủ điều kiện, chuyển yêu cầu sang Finance Team để xử lý hoàn tiền.\nBước 4: Finance Team xử lý trong 3-5 ngày làm việc và thông báo kết quả cho khách hàng.",
+      "source": "policy/refund-v4.pdf",
+      "score": 0.2762,
+      "metadata": {
+        "section": "Điều 4: Quy trình xử lý yêu cầu hoàn tiền",
+        "source": "policy/refund-v4.pdf",
+        "department": "CS",
+        "effective_date": "2026-02-01",
+        "access": "internal"
+      }
+    }
+  ],
+  "retrieved_sources": [
+    "it/access-control-sop.md",
+    "hr/leave-policy-2026.pdf",
+    "policy/refund-v4.pdf"
+  ],
+  "policy_result": {
+    "policy_applies": true,
+    "policy_name": "refund_policy_v4",
+    "exceptions_found": [],
+    "source": [
+      "it/access-control-sop.md",
+      "hr/leave-policy-2026.pdf",
+      "policy/refund-v4.pdf"
+    ],
+    "policy_version_note": "",
+    "needs_human_review": false,
+    "explanation": "Analyzed via rule-based policy check. Không phát hiện exception rõ ràng trong task/context hiện tại."
+  },
+  "mcp_tools_used": [],
+  "final_answer": "Thông tin này không có trong tài liệu nội bộ hiện có.",
+  "sources": [
+    "hr/leave-policy-2026.pdf",
+    "it/access-control-sop.md",
+    "policy/refund-v4.pdf"
+  ],
+  "confidence": 0.3,
+  "history": [
+    "[supervisor] received task: Nhân viên vừa vào thử việc (trong probation period) muốn làm remote vì lý do cá ",
+    "[supervisor] route=policy_tool_worker reason=policy/access signal detected: probation, thử việc, remote → route policy_tool_worker (prefer MCP) | choose MCP=yes",
+    "[retrieval_worker] retrieved 5 chunks from ['it/access-control-sop.md', 'hr/leave-policy-2026.pdf', 'policy/refund-v4.pdf']",
+    "[policy_tool_worker] policy_applies=True, exceptions=0, policy=refund_policy_v4",
+    "[synthesis_worker] answer generated, confidence=0.3, sources=['hr/leave-policy-2026.pdf', 'it/access-control-sop.md', 'policy/refund-v4.pdf']",
+    "[graph] completed in 8911ms via langgraph"
+  ],
+  "workers_called": [
+    "retrieval_worker",
+    "policy_tool_worker",
+    "synthesis_worker"
+  ],
+  "supervisor_route": "policy_tool_worker",
+  "latency_ms": 8911,
+  "run_id": "run_20260414_183001",
+  "question_id": "q14"
+}

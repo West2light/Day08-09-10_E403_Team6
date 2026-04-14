@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-04-14T18:58:17.758532",
+  "source_files": {
+    "ab_comparison_csv": "D:\\2025.2\\assignments\\Day08-09-10_E403_Team6\\day08\\lab\\results\\ab_comparison.csv",
+    "grading_run_json": "D:\\2025.2\\assignments\\Day08-09-10_E403_Team6\\day08\\lab\\logs\\grading_run.json"
+  },
+  "note": "avg_confidence = avg_faithfulness/5 (proxy, thang gốc Day08 là 1-5). avg_latency_ms ước tính từ diff timestamp grading_run.json. multi_hop_accuracy tính trên q07/q09/q10.",
+  "total_questions": 10,
+  "avg_confidence": 0.9,
+  "avg_latency_ms": 1681.9,
+  "abstain_rate": "2/10 (20%)",
+  "multi_hop_accuracy": "2/3 (67%)",
+  "baseline_dense": {
+    "avg_faithfulness": 4.5,
+    "avg_relevance": 4.2,
+    "avg_context_recall": 5.0,
+    "avg_completeness": 3.8,
+    "avg_confidence_proxy": 0.9,
+    "abstain_rate": "2/10 (20%)",
+    "multi_hop_accuracy": "2/3 (67%)",
+    "avg_latency_ms_estimated": 1681.9,
+    "accuracy_by_category": {
+      "SLA": "2/2",
+      "Refund": "3/3",
+      "Access Control": "2/2",
+      "IT Helpdesk": "1/1",
+      "HR Policy": "1/1",
+      "Insufficient Context": "0/1"
+    }
+  },
+  "variant_hybrid": {
+    "avg_faithfulness": 4.5,
+    "avg_relevance": 4.2,
+    "avg_context_recall": 5.0,
+    "avg_completeness": 3.8,
+    "avg_confidence_proxy": 0.9,
+    "abstain_rate": "2/10 (20%)",
+    "multi_hop_accuracy": "2/3 (67%)",
+    "accuracy_by_category": {
+      "SLA": "2/2",
+      "Refund": "3/3",
+      "Access Control": "2/2",
+      "IT Helpdesk": "1/1",
+      "HR Policy": "1/1",
+      "Insufficient Context": "0/1"
+    }
+  }
+}
