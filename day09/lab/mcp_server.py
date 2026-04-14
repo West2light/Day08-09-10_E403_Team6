@@ -132,7 +132,7 @@ TOOL_SCHEMAS = {
 # Tool Implementations
 # ─────────────────────────────────────────────
 
-def tool_search_kb(query: str, top_k: int = 3) -> dict:
+def search_kb(query: str, top_k: int = 3) -> dict:
     """
     Tìm kiếm Knowledge Base bằng semantic search.
 
@@ -193,7 +193,7 @@ MOCK_TICKETS = {
 }
 
 
-def tool_get_ticket_info(ticket_id: str) -> dict:
+def get_ticket_info(ticket_id: str) -> dict:
     """
     Tra cứu thông tin ticket (mock data).
     """
@@ -228,7 +228,7 @@ ACCESS_RULES = {
 }
 
 
-def tool_check_access_permission(access_level: int, requester_role: str, is_emergency: bool = False) -> dict:
+def check_access_permission(access_level: int, requester_role: str, is_emergency: bool = False) -> dict:
     """
     Kiểm tra điều kiện cấp quyền theo Access Control SOP.
     """
@@ -256,7 +256,7 @@ def tool_check_access_permission(access_level: int, requester_role: str, is_emer
     }
 
 
-def tool_create_ticket(priority: str, title: str, description: str = "") -> dict:
+def create_ticket(priority: str, title: str, description: str = "") -> dict:
     """
     Tạo ticket mới (MOCK — in log, không tạo thật).
     """
@@ -280,10 +280,10 @@ def tool_create_ticket(priority: str, title: str, description: str = "") -> dict
 # ─────────────────────────────────────────────
 
 TOOL_REGISTRY = {
-    "search_kb": tool_search_kb,
-    "get_ticket_info": tool_get_ticket_info,
-    "check_access_permission": tool_check_access_permission,
-    "create_ticket": tool_create_ticket,
+    "search_kb": search_kb,
+    "get_ticket_info": get_ticket_info,
+    "check_access_permission": check_access_permission,
+    "create_ticket": create_ticket,
 }
 
 
