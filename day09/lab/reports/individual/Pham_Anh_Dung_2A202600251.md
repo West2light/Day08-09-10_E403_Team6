@@ -1,7 +1,7 @@
 # Báo Cáo Cá Nhân — Lab Day 09: Multi-Agent Orchestration
 
-**Họ và tên:** [TÊN ĐẦY ĐỦ CỦA BẠN]
-**Mã số sinh viên:** [MSSV CỦA BẠN]
+**Họ và tên:** Phạm Anh Dũng
+**Mã số sinh viên:** 2A202600251
 **Vai trò trong nhóm:** Worker Owner
 **Ngày nộp:** 14/4/2026
 **Độ dài yêu cầu:** 500–800 từ
