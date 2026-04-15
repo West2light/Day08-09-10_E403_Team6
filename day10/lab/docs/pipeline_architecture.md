@@ -33,9 +33,9 @@ graph LR
 | Thành phần | Input | Output | Owner nhóm |
 |------------|-------|--------|------------|
 | Ingest | `data/raw/policy_export_dirty.csv` | List[Dict] raw rows | Trịnh Kế Tiến |
-| Transform | Raw rows | 6 cleaned + 4 quarantine | Member 2 (R7–R9) |
-| Quality | Cleaned rows | 8 expectation results (OK/FAIL) | Member 3 (E7–E8) |
-| Embed | Cleaned CSV | ChromaDB `day10_kb` (6 vectors) | Trịnh Kế Tiến |
+| Transform | Raw rows | cleaned + quarantine rows (9 rules R1–R9) | Member 2 (R7–R9) |
+| Quality | Cleaned rows | 8 expectation results E1–E8 (OK/FAIL) | Member 3 (E7–E8) |
+| Embed | Cleaned CSV | ChromaDB `day10_kb` (upsert + prune) | Trịnh Kế Tiến |
 | Monitor | Manifest JSON | PASS/WARN/FAIL freshness | Member 5 |
 
 ---
@@ -55,5 +55,6 @@ Pipeline cung cấp collection `day10_kb` trong ChromaDB — cùng engine embedd
 ## 5. Rủi ro đã biết
 
 - Freshness SLA luôn FAIL trên data mẫu (exported_at cách 120h). Production cần cronjob refresh.
-- Prune thủ công: nếu chunk bị xóa khỏi source nhưng không chạy pipeline, vector cũ vẫn tồn tại.
+- Prune tự động theo `chunk_id`: nếu không chạy lại pipeline, vector cũ không bị xóa. Rerun với data sạch để sync snapshot.
 - Console Windows cp1258 không hỗ trợ Unicode đầy đủ → đã fix bằng ASCII log messages.
+- E7 và E8 được thêm vào sau: log từ các run cũ (inject-bad, sprint4-final) chỉ có E1–E6. Rerun với code hiện tại sẽ cho đủ 8 expectations.

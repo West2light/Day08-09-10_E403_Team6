@@ -15,7 +15,9 @@ User / agent thấy gì?
 
 Metric nào báo?
 - **Expectation**: `expectation[refund_no_stale_14d_window] FAIL (halt)` trong pipeline log.
-- **Eval CSV**: `hits_forbidden=yes` trong `artifacts/eval/eval_bad.csv`.
+- **Expectation E7**: `expectation[no_bom_control_in_chunk_text] FAIL (halt)` — chunk chứa BOM/control char sót sau clean.
+- **Expectation E8**: `expectation[all_rows_have_exported_at] FAIL (warn)` — row thiếu `exported_at` (freshness lineage bị đứt).
+- **Eval CSV**: `hits_forbidden=yes` trong `artifacts/eval/eval_clean.csv` hoặc output eval mới nhất.
 - **Grading JSONL**: `hits_forbidden=true` trên `gq_d10_01`.
 - **Freshness**: `freshness_check=FAIL` khi `age_hours > sla_hours` (24h).
 
@@ -50,6 +52,6 @@ Metric nào báo?
 ## Prevention
 
 - **KHÔNG** dùng `--skip-validate` trong production. Flag này chỉ dành cho demo Sprint 3.
-- Thêm expectation E7 (BOM check) và E8 (exported_at check) để bắt thêm class lỗi mới.
+- E7 (`no_bom_control_in_chunk_text`, halt) và E8 (`all_rows_have_exported_at`, warn) **đã được tích hợp** — pipeline tự bắt BOM/control chars và thiếu exported_at trên mọi clean run.
 - Thiết lập alert khi freshness > SLA: tích hợp Slack webhook vào `freshness_check.py`.
 - Owner team review quarantine CSV định kỳ trước khi approve merge.

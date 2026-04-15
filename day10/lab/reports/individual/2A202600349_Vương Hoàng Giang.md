@@ -18,14 +18,14 @@
 **File / module:**
 
 - `monitoring/freshness_check.py` — Viết hàm `check_manifest_freshness`: đọc `latest_exported_at` từ manifest JSON, tính `age_hours`, so sánh với SLA 24h và trả về `("PASS"|"WARN"|"FAIL", detail_dict)`.
-- `docs/runbook.md` — Điền 5 mục: Symptom (agent trả lời "14 ngày"), Detection (3 metric cụ thể), Diagnosis (5 bước manifest → quarantine → eval), Mitigation (rerun + rollback embed), Prevention (chặn `--skip-validate` trên CI).
-- `docs/pipeline_architecture.md` — Vẽ Mermaid flowchart 7 bước, bảng ranh giới trách nhiệm, giải thích idempotency và liên hệ Day 09.
-- `docs/data_contract.md` — Source map 5 nguồn, schema cleaned với ràng buộc đầy đủ, bảng 9 lý do quarantine, bảng canonical version.
-- `docs/quality_report_template.md` — Điền số liệu thực từ `eval_bad.csv` / `eval_clean.csv`, freshness FAIL 120h, mô tả corruption inject Sprint 3.
+- `docs/runbook.md` — Điền 5 mục: Symptom (agent trả lời "14 ngày"), Detection (5 metric bao gồm E7/E8 mới), Diagnosis (5 bước manifest → quarantine → eval), Mitigation (rerun + rollback embed), Prevention (E7 + E8 đã tích hợp; chặn `--skip-validate` trên CI).
+- `docs/pipeline_architecture.md` — Vẽ Mermaid flowchart 7 bước, bảng ranh giới trách nhiệm (Transform: 9 rules R1–R9; Quality: 8 expectations E1–E8), giải thích idempotency và liên hệ Day 09.
+- `docs/data_contract.md` — Source map nguồn, schema cleaned với ràng buộc đầy đủ (làm rõ R8 quarantine < 20 ký tự vs E4 warn < 8 ký tự; exported_at bắt buộc theo R9 + E8), bảng 9 lý do quarantine, bảng canonical version.
+- `docs/quality_report_template.md` — Điền số liệu thực, bổ sung dòng "8 expectations (E1–E8)" vào bảng tóm tắt, ghi nhận E7/E8 cũng kiểm tra trên inject-bad run, giải thích log cũ chỉ có E1–E6 do E7/E8 thêm sau.
 - `reports/group_report.md` — Tổng hợp pipeline, bảng metric_impact R7/R8/R9/E7/E8, before/after retrieval, rủi ro còn lại.
 
 **Kết nối với thành viên khác:**
-Sau khi nhóm Embed Owner chạy xong `sprint4-final`, tôi lấy `manifest_sprint4-final.json` và hai file `eval_bad.csv` / `eval_clean.csv` để điền số liệu thực vào toàn bộ docs. Runbook tôi viết là tài liệu nhóm Inject Owner dùng để mô tả kịch bản Sprint 3.
+Sau khi nhóm Embed Owner chạy xong `sprint4-final`, tôi lấy `manifest_sprint4-final.json`, `artifacts/eval/eval_clean.csv` và `artifacts/eval/grading_run.jsonl` để điền số liệu thực vào toàn bộ docs. Runbook tôi viết là tài liệu nhóm Inject Owner dùng để mô tả kịch bản Sprint 3.
 
 **Bằng chứng:**
 Manifest `run_id=sprint4-final` ghi rõ `skipped_validate: false`, `no_refund_fix: false` — đây là run sạch tôi dùng làm baseline cho toàn bộ docs. Log freshness từ pipeline: `freshness_check=FAIL {"age_hours": 120.239, "sla_hours": 24.0, "reason": "freshness_sla_exceeded"}`.
@@ -57,7 +57,9 @@ Thiết kế này tách freshness check ra khỏi embed layer, giúp Monitoring 
 
 **Diagnosis:** Flag `--no-refund-fix` tắt cleaning rule R6 (fix "14 ngày → 7 ngày"), và `--skip-validate` bỏ qua expectation E3 halt (`refund_no_stale_14d_window`, `violations=1`). Hai flag kết hợp cho phép chunk stale lọt vào ChromaDB mà không có cơ chế chặn nào. Lỗi không nằm ở code — đây là lỗ hổng thiết kế: pipeline cho phép bypass hoàn toàn guardrail chỉ bằng CLI flag, và log "PIPELINE_OK" vẫn xuất hiện nên khó phát hiện nếu không đọc manifest.
 
-**Fix (ghi vào runbook mục Prevention):** Thêm alert khi manifest ghi `skipped_validate: true`; cấm flag này trên CI/CD nhánh production. Bằng chứng đo được: rerun `sprint4-final` cho `eval_clean.csv` với `hits_forbidden=no` trên toàn bộ 4 câu hỏi.
+**Fix (ghi vào runbook mục Prevention):** Thêm alert khi manifest ghi `skipped_validate: true`; cấm flag này trên CI/CD nhánh production. Bằng chứng đo được: rerun `sprint4-final` cho `artifacts/eval/eval_clean.csv` với `hits_forbidden=no` trên toàn bộ câu hỏi grading.
+
+Ngoài ra, khi cập nhật docs tôi phát hiện `quality_report_template.md` tham chiếu `eval_bad.csv` nhưng file này không có trong `artifacts/eval/` (chỉ có `eval_clean.csv` và `grading_run.jsonl`). Tôi đã sửa lại — mục before dùng expectation log từ run `inject-bad` (`expectation[refund_no_stale_14d_window] FAIL`) thay vì reference file không tồn tại.
 
 ---
 
@@ -71,14 +73,14 @@ freshness_check=FAIL
   reason: freshness_sla_exceeded
 ```
 
-**Retrieval eval** — câu hỏi then chốt `q_refund_window`:
+**Retrieval eval** — câu hỏi then chốt `q_refund_window` / `gq_d10_01`:
 
-| run_id | `hits_forbidden` | `contains_expected` | File |
+| run_id | `hits_forbidden` | `contains_expected` | Nguồn bằng chứng |
 |--------|-----------------|--------------------|----|
-| `inject-bad` | **yes** | yes | `artifacts/eval/eval_bad.csv` |
-| `sprint4-final` | **no** | yes | `artifacts/eval/eval_clean.csv` |
+| `inject-bad` | **yes** | yes | Expectation log: `refund_no_stale_14d_window FAIL (halt) violations=1` |
+| `sprint4-final` | **no** | yes | `artifacts/eval/eval_clean.csv` + `grading_run.jsonl` |
 
-Sau khi pipeline chạy đúng (`sprint4-final`), chunk "14 ngày làm việc" không còn trong index ChromaDB → retrieval trả về đúng "7 ngày làm việc" → `hits_forbidden` chuyển từ `yes` sang `no`.
+Sau khi pipeline chạy đúng (`sprint4-final`), chunk "14 ngày làm việc" không còn trong index ChromaDB → retrieval trả về đúng "7 ngày làm việc" → `hits_forbidden` chuyển từ `yes` sang `no`. Xác nhận thêm từ `grading_run.jsonl`: `gq_d10_01 hits_forbidden=false, contains_expected=true, top1_doc_matches=true`.
 
 ---
 

@@ -19,9 +19,9 @@
 |-----|------|----------|---------|
 | chunk_id | string | Có | SHA256 hash: `{doc_id}_{seq}_{hash16}` — ổn định cho upsert |
 | doc_id | string | Có | Phải thuộc allowlist: `policy_refund_v4`, `sla_p1_2026`, `it_helpdesk_faq`, `hr_leave_policy` |
-| chunk_text | string | Có | Min 20 ký tự (R8); không chứa BOM/control chars (R7) |
+| chunk_text | string | Có | Cleaning rule R8: quarantine nếu < 20 ký tự; Expectation E4: WARN nếu < 8 ký tự; không chứa BOM/control chars (R7 + E7) |
 | effective_date | date | Có | Format ISO `YYYY-MM-DD`; HR policy phải >= 2026-01-01 |
-| exported_at | datetime | Có | Bắt buộc có giá trị (R9); dùng cho freshness SLA check |
+| exported_at | datetime | Có | Bắt buộc có giá trị (R9 + E8); dùng cho freshness SLA check và lineage tracking |
 
 ---
 

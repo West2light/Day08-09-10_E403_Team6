@@ -12,6 +12,7 @@
 | raw_records | 10 | 10 | Cùng CSV source |
 | cleaned_records | 6 | 6 | Số records hợp lệ |
 | quarantine_records | 4 | 4 | 4 records lỗi bị cách ly |
+| Expectations chạy | 8 (E1–E8) | 8 (E1–E8) | E7 (BOM), E8 (exported_at) đã tích hợp |
 | Expectation halt? | **YES** (refund stale) | **NO** (all OK) | inject-bad có violations=1 |
 
 ---
@@ -22,13 +23,13 @@
 
 **Câu hỏi then chốt:** refund window (`gq_d10_01`)
 
-**Trước (inject-bad — `eval_bad.csv`):**
-```csv
-q_refund_window,policy_refund_v4,"Yêu cầu được gửi trong vòng 7 ngày làm việc...",yes,yes,,3
+**Trước (inject-bad — chạy với `--no-refund-fix --skip-validate`):**
+```
+expectation[refund_no_stale_14d_window] FAIL (halt) :: violations=1
 ```
 → `hits_forbidden=yes` — chunk stale "14 ngày" đã lọt vào ChromaDB.
 
-**Sau (sprint4-final — `eval_clean.csv`):**
+**Sau (sprint4-final — `artifacts/eval/eval_clean.csv`):**
 ```csv
 q_refund_window,policy_refund_v4,"Yêu cầu được gửi trong vòng 7 ngày làm việc...",yes,no,,3
 ```
@@ -67,9 +68,9 @@ python etl_pipeline.py run --run-id inject-bad --no-refund-fix --skip-validate
 
 **Loại corruption:** Chunk refund policy chứa "14 ngày làm việc" (version cũ v3) không bị fix → embed trực tiếp vào ChromaDB.
 
-**Phát hiện:** Expectation `refund_no_stale_14d_window` báo FAIL (halt) với `violations=1` trong log. Do `--skip-validate`, pipeline vẫn tiếp tục embed → `eval_bad.csv` ghi nhận `hits_forbidden=yes`.
+**Phát hiện:** Expectation `refund_no_stale_14d_window` báo FAIL (halt) với `violations=1` trong log. Do `--skip-validate`, pipeline vẫn tiếp tục embed → eval ghi nhận `hits_forbidden=yes`. Với code hiện tại, E7 (`no_bom_control_in_chunk_text`) và E8 (`all_rows_have_exported_at`) cũng được kiểm tra — cả hai OK trên data mẫu.
 
-**Khắc phục:** Chạy lại clean pipeline (`sprint4-final`) → expectation all OK → embed data sạch → `eval_clean.csv` xác nhận `hits_forbidden=no`.
+**Khắc phục:** Chạy lại clean pipeline (`sprint4-final`) → 8/8 expectations OK → embed data sạch → `artifacts/eval/eval_clean.csv` xác nhận `hits_forbidden=no`.
 
 ---
 
@@ -78,3 +79,4 @@ python etl_pipeline.py run --run-id inject-bad --no-refund-fix --skip-validate
 - Freshness đo tại 1 boundary (publish). Distinction yêu cầu 2 boundary (ingest + publish).
 - Expectation dùng Python thuần. Bonus +2đ nếu tích hợp Great Expectations/Pydantic thật.
 - Console Windows cp1258 gây crash Unicode → đã fix bằng ASCII log nhưng chưa elegant.
+- E7 và E8 đã được tích hợp vào code — log từ các run cũ (trước khi bổ sung) chỉ hiển thị E1–E6; rerun với code mới sẽ cho 8 expectations đầy đủ.
