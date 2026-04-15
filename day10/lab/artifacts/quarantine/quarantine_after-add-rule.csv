@@ -1,0 +1,8 @@
+chunk_id,doc_id,chunk_text,effective_date,exported_at,reason,effective_date_normalized,chunk_length
+2,policy_refund_v4,Yeu cau duoc gui trong vong 7 ngay lam viec ke tu thoi diem xac nhan don hang.,2026-02-01,2026-04-10T08:00:00,duplicate_chunk_text,,
+5,policy_refund_v4,,,2026-04-10T08:00:00,missing_effective_date,,
+7,hr_leave_policy,"Nhan vien duoi 3 nam kinh nghiem duoc 10 ngay phep nam, ban HR 2025.",2025-01-01,2026-04-10T08:00:00,stale_hr_policy_effective_date,2025-01-01,
+9,legacy_catalog_xyz_zzz,Chunk noi dung du dai de vuot nguong expectation do dai toi thieu trong cleaned export.,2026-02-01,2026-04-10T08:00:00,unknown_doc_id,,
+11,it_helpdesk_faq,﻿,2026-02-01,2026-04-10T08:00:00,bom_control_only_content,,
+12,sla_p1_2026,Qua ngan,2026-02-01,2026-04-10T08:00:00,chunk_too_short,,8
+13,it_helpdesk_faq,Dong nay co noi dung hop le nhung thieu exported_at de kich hoat rule R9.,2026-02-01,,missing_exported_at,,

@@ -2,7 +2,14 @@
 Cleaning rules — raw export → cleaned rows + quarantine.
 
 Baseline gồm các failure mode mở rộng (allowlist doc_id, parse ngày, HR stale version).
-Sinh viên thêm ≥3 rule mới: mỗi rule phải ghi `metric_impact` (xem README — chống trivial).
+Nhóm thêm 3 rule mới (R7–R9) — mỗi rule có metric_impact đo được:
+  R7 | strip_bom_control_chars  : loại ký tự BOM/control (\x00-\x08) khỏi chunk_text;
+                                  metric: quarantine_records tăng khi inject data có BOM.
+  R8 | min_chunk_content_length : quarantine chunk_text < 20 ký tự (quá ngắn, vô nghĩa);
+                                  metric: quarantine_records tăng khi inject chunk ngắn.
+  R9 | reject_missing_exported_at: quarantine khi exported_at rỗng;
+                                   metric: freshness check không có timestamp → WARN;
+                                   quarantine_records tăng khi inject bản không có ngày export.
 """
 
 from __future__ import annotations
@@ -113,6 +120,35 @@ def clean_rows(
 
         if not text:
             quarantine.append({**raw, "reason": "missing_chunk_text"})
+            continue
+
+        # ── R7: strip_bom_control_chars ──────────────────────────────────────
+        # metric_impact: quarantine_records tăng khi inject chunk chứa BOM/\x00
+        # Loại bỏ BOM (\ufeff) và control characters \x00-\x08
+        cleaned_text = re.sub(r"[\x00-\x08\ufeff]", "", text)
+        if cleaned_text != text:
+            # Nếu sau khi strip mà text rỗng → quarantine
+            if not cleaned_text.strip():
+                quarantine.append({**raw, "reason": "bom_control_only_content"})
+                continue
+            # Nếu vẫn còn nội dung → dùng text đã strip, ghi chú
+            text = cleaned_text
+
+        # ── R8: min_chunk_content_length ─────────────────────────────────────
+        # metric_impact: quarantine_records tăng khi inject chunk ngắn < 20 ký tự
+        # Chunk < 20 ký tự không đủ thông tin cho retrieval, gây noise
+        MIN_CHUNK_LEN = 20
+        if len(text.strip()) < MIN_CHUNK_LEN:
+            quarantine.append(
+                {**raw, "reason": "chunk_too_short", "chunk_length": len(text.strip())}
+            )
+            continue
+
+        # ── R9: reject_missing_exported_at ───────────────────────────────────
+        # metric_impact: freshness WARN khi không có exported_at; quarantine_records tăng
+        # Chunk thiếu exported_at không thể kiểm tra freshness SLA
+        if not exported_at or not exported_at.strip():
+            quarantine.append({**raw, "reason": "missing_exported_at"})
             continue
 
         key = _norm_text(text)

@@ -1,0 +1,14 @@
+{
+  "run_id": "baseline",
+  "run_timestamp": "2026-04-15T09:23:16.253022+00:00",
+  "raw_path": "data\\raw\\policy_export_dirty_more_inject.csv",
+  "raw_records": 13,
+  "cleaned_records": 9,
+  "quarantine_records": 4,
+  "latest_exported_at": "2026-04-10T08:00:00",
+  "no_refund_fix": false,
+  "skipped_validate": false,
+  "cleaned_csv": "artifacts\\cleaned\\cleaned_baseline.csv",
+  "chroma_path": "./chroma_db",
+  "chroma_collection": "day10_kb"
+}

@@ -1,0 +1,14 @@
+chunk_id,doc_id,chunk_text,effective_date,exported_at
+1,policy_refund_v4,"Yeu cau duoc gui trong vong 7 ngay lam viec ke tu thoi diem xac nhan don hang.",2026-02-01,2026-04-10T08:00:00
+2,policy_refund_v4,"Yeu cau duoc gui trong vong 7 ngay lam viec ke tu thoi diem xac nhan don hang.",2026-02-01,2026-04-10T08:00:00
+3,policy_refund_v4,"Yeu cau hoan tien duoc chap nhan trong vong 14 ngay lam viec ke tu xac nhan don hang, ban sync cu policy-v3 loi migration.",2026-02-01,2026-04-10T08:00:00
+4,sla_p1_2026,"Ticket P1 co SLA phan hoi ban dau 15 phut va resolution trong 4 gio.",2026-02-01,2026-04-10T08:00:00
+5,policy_refund_v4,"",,2026-04-10T08:00:00
+6,it_helpdesk_faq,"Tai khoan bi khoa sau 5 lan dang nhap sai lien tiep.",2026-02-01,2026-04-10T08:00:00
+7,hr_leave_policy,"Nhan vien duoi 3 nam kinh nghiem duoc 10 ngay phep nam, ban HR 2025.",2025-01-01,2026-04-10T08:00:00
+8,hr_leave_policy,"Nhan vien duoi 3 nam kinh nghiem duoc 12 ngay phep nam theo chinh sach 2026.",2026-02-01,2026-04-10T08:00:00
+9,legacy_catalog_xyz_zzz,"Chunk noi dung du dai de vuot nguong expectation do dai toi thieu trong cleaned export.",2026-02-01,2026-04-10T08:00:00
+10,it_helpdesk_faq,"FAQ bo sung: doi mat khau qua portal self-service co the mat toi da 24 gio de dong bo toan he thong.",01/02/2026,2026-04-10T08:00:00
+11,it_helpdesk_faq,"﻿",2026-02-01,2026-04-10T08:00:00
+12,sla_p1_2026,"Qua ngan",2026-02-01,2026-04-10T08:00:00
+13,it_helpdesk_faq,"Dong nay co noi dung hop le nhung thieu exported_at de kich hoat rule R9.",2026-02-01,
