@@ -2,59 +2,82 @@
 
 > Bắt đầu từ `contracts/data_contract.yaml` — mở rộng và đồng bộ file này.
 
+**version:** 1.0  
+**dataset:** `kb_chunk_export`  
+**owner_team:** Nhóm 6  
+**freshness SLA:** 24 giờ (measured_at: publish)
+
 ---
 
 ## 1. Nguồn dữ liệu (source map)
 
-| Nguồn | Phương thức ingest | Failure mode chính | Metric / alert |
-|-------|-------------------|-------------------|----------------|
-| `data/raw/policy_export_dirty.csv` — CSV export từ hệ thống nội bộ (policy & HR) | Batch CSV, đọc bằng `load_raw_csv()` trong `transform/cleaning_rules.py` | **unknown_doc_id**: doc_id không thuộc allowlist (vd `legacy_catalog_xyz_zzz`) → quarantine; **missing/invalid effective_date**: ngày rỗng hoặc sai định dạng (vd `01/02/2026`) → quarantine | `quarantine_records` trong log + manifest; alert khi `quarantine_records > 0` |
-| `data/docs/*.txt` — Tài liệu canonical (policy_refund_v4, sla_p1_2026, it_helpdesk_faq, hr_leave_policy) | Đọc trực tiếp làm ground-truth để verify nội dung chunk; không ingest lại qua pipeline | **stale_refund_window**: chunk chứa "14 ngày làm việc" thay vì "7 ngày" (lỗi migration từ policy-v3); **stale_hr_policy**: `effective_date < 2026-01-01` → bản HR 2025 lọt vào | `expectation[no_stale_refund_window]` severity=halt; log `PIPELINE_HALT` nếu fail |
+| Nguồn | `doc_id` | Phương thức ingest | Failure mode chính | Metric / alert |
+|-------|---------|-------------------|-------------------|----------------|
+| `data/docs/policy_refund_v4.txt` | `policy_refund_v4` | CSV export → `load_raw_csv` | Chunk cũ "14 ngày làm việc" từ policy-v3 lọt vào do migration sai | Expectation E3 `refund_no_stale_14d_window` HALT; eval `hits_forbidden=yes` |
+| `data/docs/sla_p1_2026.txt` | `sla_p1_2026` | CSV export → `load_raw_csv` | Thiếu `effective_date` hoặc sai format (dd/mm/yyyy) | Expectation E5 `effective_date_iso_yyyy_mm_dd` HALT; quarantine `missing_effective_date` |
+| `data/docs/it_helpdesk_faq.txt` | `it_helpdesk_faq` | CSV export → `load_raw_csv` | `effective_date` sai format `01/02/2026` → rule R2 normalize → `2026-02-01` | Log `effective_date_normalized`; quarantine nếu không parse được |
+| `data/docs/hr_leave_policy.txt` | `hr_leave_policy` | CSV export → `load_raw_csv` | Xung đột version: bản HR 2025 (10 ngày phép) vs bản 2026 (12 ngày phép) | Rule R3 quarantine `effective_date < 2026-01-01`; Expectation E6 `hr_leave_no_stale_10d_annual` HALT |
+| `data/raw/policy_export_dirty.csv` | *(nhiều doc_id)* | File CSV tổng hợp từ DB/API | `doc_id` lạ không thuộc allowlist (`legacy_catalog_xyz_zzz`) | Rule R1 quarantine `unknown_doc_id`; quarantine_records tăng |
+
+**Allowlist `doc_id`** (đồng bộ với `ALLOWED_DOC_IDS` trong `transform/cleaning_rules.py`):
+```
+policy_refund_v4 | sla_p1_2026 | it_helpdesk_faq | hr_leave_policy
+```
+Thêm `doc_id` mới phải cập nhật đồng thời: `cleaning_rules.py` → `ALLOWED_DOC_IDS`, `data_contract.yaml` → `allowed_doc_ids`, và `data/test_questions.json`.
 
 ---
 
 ## 2. Schema cleaned
 
-| Cột | Kiểu | Bắt buộc | Ghi chú |
-|-----|------|----------|---------|
-| chunk_id | string | Có | ID ổn định sau clean — hash SHA-256(doc_id \| chunk_text \| seq)[:16], dạng `{doc_id}_{seq}_{hash}` |
-| doc_id | string | Có | Khóa logic tài liệu nguồn; phải thuộc `allowed_doc_ids` trong `data_contract.yaml` |
-| chunk_text | string | Có | Nội dung chunk sau clean; `min_length = 8` ký tự; chunk refund v4 được fix `14 ngày → 7 ngày` + tag `[cleaned: stale_refund_window]` |
-| effective_date | date | Có | Chuẩn hoá sang `YYYY-MM-DD`; chấp nhận input `DD/MM/YYYY` (tự động convert); không được rỗng |
-| exported_at | datetime | Có | Timestamp xuất từ hệ thống nguồn, định dạng ISO-8601; dùng để tính `latest_exported_at` trong manifest |
+| Cột | Kiểu | Bắt buộc | Ràng buộc | Ghi chú |
+|-----|------|----------|-----------|---------|
+| `chunk_id` | string | Có | Unique, stable | Sinh bởi `_stable_chunk_id(doc_id, chunk_text, seq)` = `{doc_id}_{seq}_{sha256[:16]}`; cùng nội dung → cùng ID → upsert idempotent |
+| `doc_id` | string | Có | Thuộc `ALLOWED_DOC_IDS` | Khóa logic tài liệu nguồn; record không hợp lệ bị quarantine lý do `unknown_doc_id` |
+| `chunk_text` | string | Có | `len >= 8` (E4 warn), `len >= 20` (R8 quarantine) | Không chứa ký tự BOM `\ufeff` / control `\x00–\x08` (R7 strip); không chứa "14 ngày làm việc" sau fix (E3 halt) |
+| `effective_date` | date | Có | Format `YYYY-MM-DD` (ISO 8601) | Rule R2 normalize `dd/mm/yyyy → yyyy-mm-dd`; `hr_leave_policy` phải ≥ `2026-01-01` (policy_versioning) |
+| `exported_at` | datetime | Có | Không rỗng (R9 quarantine, E8 warn) | Dùng để tính `latest_exported_at` trong manifest → freshness check |
+
+**Điều kiện bổ sung theo `contracts/data_contract.yaml`:**
+- `hr_leave_min_effective_date: 2026-01-01` — bản HR có `effective_date` trước ngày này bị coi là stale
+- Chunk `policy_refund_v4` sau clean không được chứa chuỗi "14 ngày làm việc" (quality rule `no_stale_refund_window`, severity: halt)
 
 ---
 
 ## 3. Quy tắc quarantine vs drop
 
-Record **bị quarantine** (không vào cleaned, lưu vào `artifacts/quarantine/`) khi gặp một trong các lý do sau:
+**Các record bị flag đi vào** `artifacts/quarantine/quarantine_{run_id}.csv` kèm cột `reason`:
 
-| Lý do (`reason`) | Điều kiện | Hành động |
-|------------------|-----------|-----------|
-| `unknown_doc_id` | `doc_id` không thuộc allowlist | Quarantine — có thể là export nhầm catalog; cần owner_team xác nhận thêm doc mới vào `allowed_doc_ids` |
-| `missing_effective_date` | `effective_date` rỗng | Quarantine — thiếu metadata bắt buộc |
-| `invalid_effective_date_format` | Không parse được (không phải ISO hay DD/MM/YYYY) | Quarantine — ghi thêm `effective_date_raw` để trace |
-| `stale_hr_policy_effective_date` | `doc_id = hr_leave_policy` AND `effective_date < 2026-01-01` | Quarantine — bản HR 2025 conflict với bản 2026; cutoff lấy từ `policy_versioning.hr_leave_min_effective_date` trong contract |
-| `missing_chunk_text` | `chunk_text` rỗng sau strip | Quarantine |
-| `duplicate_chunk_text` | Nội dung chunk đã xuất hiện trong cùng run (normalize lowercase + collapse whitespace) | Quarantine — giữ bản đầu tiên |
+| Lý do (`reason`) | Quy tắc nguồn | Severity | Xử lý tiếp theo |
+|-----------------|--------------|----------|-----------------|
+| `unknown_doc_id` | R1 — allowlist | Quarantine | Xem xét thêm vào allowlist hoặc xóa khỏi export nguồn; cần approval từ owner |
+| `missing_effective_date` | R2 — normalize date | Quarantine | Bổ sung `effective_date` ở hệ nguồn rồi re-export |
+| `invalid_effective_date_format` | R2 — normalize date | Quarantine | Sửa format ở hệ nguồn hoặc thêm parser mới vào `_normalize_effective_date` |
+| `stale_hr_policy_effective_date` | R3 — HR version | Quarantine | Không dùng; bản canonical là bản 2026 (`effective_date ≥ 2026-01-01`) |
+| `missing_chunk_text` | R4 — empty text | Quarantine | Kiểm tra export pipeline nguồn — chunk trống không có giá trị retrieval |
+| `bom_control_only_content` | R7 — BOM strip | Quarantine | Chunk chỉ chứa ký tự BOM/control; xóa ở hệ nguồn |
+| `chunk_too_short` | R8 — min length | Quarantine | Chunk < 20 ký tự sau strip — không đủ thông tin cho retrieval; merge hoặc bỏ |
+| `missing_exported_at` | R9 — exported_at | Quarantine | Bổ sung timestamp export ở hệ nguồn; thiếu field này không thể kiểm tra freshness |
+| `duplicate_chunk_text` | R5 — dedupe | Quarantine | Giữ bản đầu tiên; các bản sau bị drop — không cần approve, đây là behavior đúng |
 
-**Vị trí lưu:** `artifacts/quarantine/quarantine_{run_id}.csv`
-
-**Ai approve merge lại:** Owner team (`Nhóm 6`) review file quarantine sau mỗi run. Merge lại bằng cách sửa nguồn gốc (CSV raw hoặc doc canonical) rồi chạy lại pipeline — **không sửa thủ công** file cleaned.
-
-Record bị **drop hoàn toàn** (không lưu): không có — mọi record lỗi đều được giữ trong quarantine để audit.
+**Ai approve merge lại?**
+- Record quarantine **không tự động được merge** trở lại cleaned — phải sửa ở **hệ nguồn** và re-export.
+- Ngoại lệ: `duplicate_chunk_text` là behavior bình thường (giữ bản đầu) — không cần can thiệp.
+- Owner theo `doc_id` (xem Section 1) phải review và approve trước khi thêm doc mới hoặc thay đổi cleaning rule ảnh hưởng đến allowlist.
 
 ---
 
 ## 4. Phiên bản & canonical
 
-**Source of truth cho policy refund:** `data/docs/policy_refund_v4.txt` — phiên bản **v4**, cửa sổ hoàn tiền **7 ngày làm việc**. Bất kỳ chunk nào chứa "14 ngày làm việc" là lỗi migration từ v3 và phải được fix bởi cleaning rule `stale_refund_window` (severity = halt nếu sót qua).
+**Source of truth theo từng `doc_id`:**
 
-| doc_id | File canonical | Phiên bản / ghi chú |
-|--------|---------------|---------------------|
-| `policy_refund_v4` | `data/docs/policy_refund_v4.txt` | v4 — cửa sổ 7 ngày làm việc (v3 đã lỗi thời) |
-| `sla_p1_2026` | `data/docs/sla_p1_2026.txt` | 2026 — SLA P1: phản hồi 15 phút, resolution 4 giờ |
-| `it_helpdesk_faq` | `data/docs/it_helpdesk_faq.txt` | Hiện hành — khoá tài khoản sau 5 lần sai |
-| `hr_leave_policy` | `data/docs/hr_leave_policy.txt` | 2026 (`effective_date ≥ 2026-01-01`) — 12 ngày phép; cutoff cấu hình tại `policy_versioning.hr_leave_min_effective_date` trong `contracts/data_contract.yaml` |
+| `doc_id` | File canonical | Version hiện hành | Ghi chú |
+|---------|---------------|-------------------|---------|
+| `policy_refund_v4` | `data/docs/policy_refund_v4.txt` | v4 (2026-02-01) | Cửa sổ hoàn tiền = **7 ngày làm việc**; bản v3 "14 ngày" là lỗi migration — bị cleaning rule R6 fix và expectation E3 chặn |
+| `sla_p1_2026` | `data/docs/sla_p1_2026.txt` | 2026 (2026-02-01) | SLA P1: phản hồi ≤ 15 phút, resolution ≤ 4 giờ |
+| `it_helpdesk_faq` | `data/docs/it_helpdesk_faq.txt` | 2026 (2026-02-01) | Khóa tài khoản sau 5 lần sai; đồng bộ mật khẩu tối đa 24 giờ |
+| `hr_leave_policy` | `data/docs/hr_leave_policy.txt` | 2026 (effective ≥ 2026-01-01) | Nhân viên < 3 năm = **12 ngày phép/năm**; bản 2025 "10 ngày" bị quarantine theo `hr_leave_min_effective_date` |
 
-> Khi nhóm bổ sung tài liệu mới: (1) thêm file vào `data/docs/`, (2) đăng ký `doc_id` vào `allowed_doc_ids` + `canonical_sources` trong `data_contract.yaml`, (3) đồng bộ `ALLOWED_DOC_IDS` trong `transform/cleaning_rules.py`.
+**Quy tắc versioning:**
+- Cột `effective_date` trong cleaned CSV là nguồn chính xác định version tài liệu.
+- Với `hr_leave_policy`, cutoff `2026-01-01` được định nghĩa trong `contracts/data_contract.yaml` (`policy_versioning.hr_leave_min_effective_date`) — không hard-code trong code, tham chiếu từ config để dễ cập nhật.
+- Khi có version mới (vd: `policy_refund_v5`), phải cập nhật `doc_id` trong allowlist, thêm test question, và kiểm tra không còn chunk version cũ trong ChromaDB sau pipeline run.
