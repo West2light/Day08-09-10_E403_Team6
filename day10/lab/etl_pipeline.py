@@ -32,7 +32,7 @@ from transform.cleaning_rules import clean_rows, load_raw_csv, write_cleaned_csv
 load_dotenv()
 
 ROOT = Path(__file__).resolve().parent
-RAW_DEFAULT = ROOT / "data" / "raw" / "policy_export_dirty_more_inject.csv"
+RAW_DEFAULT = ROOT / "data" / "raw" / "policy_export_dirty.csv"
 ART = ROOT / "artifacts"
 LOG_DIR = ART / "logs"
 MAN_DIR = ART / "manifests"
@@ -88,7 +88,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         log("PIPELINE_HALT: expectation suite failed (halt).")
         return 2
     if halt and args.skip_validate:
-        log("WARN: expectation failed but --skip-validate → tiếp tục embed (chỉ dùng cho demo Sprint 3).")
+        log("WARN: expectation failed but --skip-validate -> continuing embed (only for Sprint 3 demo).")
 
     # Embed
     embed_ok = cmd_embed_internal(

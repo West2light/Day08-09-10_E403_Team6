@@ -1,0 +1,29 @@
+[
+  {
+    "id": "gq_d10_01",
+    "question": "Khách hàng có bao nhiêu ngày để yêu cầu hoàn tiền kể từ khi xác nhận đơn?",
+    "must_contain_any": ["7 ngày", "7 ngày làm việc"],
+    "must_not_contain": ["14 ngày làm việc"],
+    "expect_top1_doc_id": "policy_refund_v4",
+    "grading_criteria": ["contains_7_day_window", "no_stale_14_day", "top1_is_refund_policy"],
+    "note": "Pass criteria: contains_expected=true AND hits_forbidden=false"
+  },
+  {
+    "id": "gq_d10_02",
+    "question": "SLA phản hồi đầu tiên cho ticket ưu tiên P1 là bao lâu?",
+    "must_contain_any": ["15 phút"],
+    "must_not_contain": [],
+    "expect_top1_doc_id": "sla_p1_2026",
+    "grading_criteria": ["contains_15min_sla", "top1_is_sla_doc"],
+    "note": "Pass criteria: contains_expected=true"
+  },
+  {
+    "id": "gq_d10_03",
+    "question": "Theo chính sách nghỉ phép hiện hành (2026), nhân viên dưới 3 năm kinh nghiệm được bao nhiêu ngày phép năm?",
+    "must_contain_any": ["12 ngày", "12 ngày phép năm"],
+    "must_not_contain": ["10 ngày phép năm"],
+    "expect_top1_doc_id": "hr_leave_policy",
+    "grading_criteria": ["contains_12_day_leave", "no_stale_10_day", "top1_is_hr_policy", "version_2026"],
+    "note": "Merit criteria: contains_expected=true, hits_forbidden=false, top1_doc_matches=true"
+  }
+]
