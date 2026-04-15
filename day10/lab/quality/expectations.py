@@ -112,5 +112,35 @@ def run_expectations(cleaned_rows: List[Dict[str, Any]]) -> Tuple[List[Expectati
         )
     )
 
+    # E7: không còn ký tự BOM/control sót trong chunk_text sau clean
+    # metric_impact: expectation này FAIL khi inject chunk có BOM qua --skip-validate
+    bom_rows = [
+        r
+        for r in cleaned_rows
+        if re.search(r"[\x00-\x08\ufeff]", r.get("chunk_text") or "")
+    ]
+    ok7 = len(bom_rows) == 0
+    results.append(
+        ExpectationResult(
+            "no_bom_control_in_chunk_text",
+            ok7,
+            "halt",
+            f"bom_rows={len(bom_rows)}",
+        )
+    )
+
+    # E8: tất cả rows phải có exported_at hợp lệ (kiểm tra freshness lineage)
+    # metric_impact: expectation này FAIL khi inject bản không có exported_at → warn trước giảng viên
+    missing_export = [r for r in cleaned_rows if not (r.get("exported_at") or "").strip()]
+    ok8 = len(missing_export) == 0
+    results.append(
+        ExpectationResult(
+            "all_rows_have_exported_at",
+            ok8,
+            "warn",
+            f"missing_exported_at_rows={len(missing_export)}",
+        )
+    )
+
     halt = any(not r.passed and r.severity == "halt" for r in results)
     return results, halt
