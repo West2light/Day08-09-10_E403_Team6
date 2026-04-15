@@ -5,7 +5,9 @@
 | Tên | Vai trò (Day 10) | MSSV |
 |-----|------------------|------|
 | Trịnh Kế Tiến | Pipeline End-to-end + Embed Owner | 2A202600500 |
+| Nguyễn Lê Trung | Ingestion Owner | 2A202600349 |
 | Vương Hoàng Giang | Monitoring / Docs Owner | 2A202600349 |
+| Phạm Anh Dũng | Cleaning Owner | 2A202600349 |
 | Dương Quang Đông | Expectations (E7–E8) + Inject Sprint 3 | 2A202600445 |
 
 **Ngày nộp:** 15/04/2026  
